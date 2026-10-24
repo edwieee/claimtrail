@@ -27,11 +27,24 @@ export async function POST(req: NextRequest) {
     const mapping = retrieveEvidenceForClaim(claim, current.sources, { limit: 8 });
     const findings = (current.findings || []).filter((finding) => finding.relatedClaimIds.includes(claim.id));
     const draft = await generateEvidenceGroundedDraft(claim, mapping, findings, { model });
+    const nextVersion = (claim.answerVersion || 0) + 1;
+    const previousAnswer = claim.editedAnswer || claim.answerDraft;
     const updatedClaim = {
       ...claim,
       answerDraft: draft.draftAnswer,
+      editedAnswer: undefined,
+      answerVersion: nextVersion,
+      answerHistory: [
+        ...(claim.answerHistory || []),
+        ...(previousAnswer
+          ? [{ version: nextVersion - 1, answer: previousAnswer, source: claim.editedAnswer ? 'human_edit' as const : 'ai' as const, createdAt: new Date().toISOString(), reason: 'Replaced by explicit regeneration.' }]
+          : []),
+        { version: nextVersion, answer: draft.draftAnswer, source: 'ai' as const, createdAt: draft.generatedAt },
+      ],
       answerDraftDetails: draft,
       answerConfidence: undefined,
+      reviewStatus: 'needs_review' as const,
+      approval: undefined,
       statusDetail: `AI draft generated with ${draft.model}; human review required.`,
     };
 

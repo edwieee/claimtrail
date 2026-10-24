@@ -456,7 +456,6 @@ export async function parseXlsxQuestionnaire(
       answerCol: aCol,
       reviewStatus: aCellText ? 'approved' : 'draft',
       comments: rowComment || undefined,
-      notes: rowComment || undefined,
       nodes: [
         {
           id: `node-${claimId}`,

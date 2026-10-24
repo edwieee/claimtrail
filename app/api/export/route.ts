@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
-import { getAssessmentStore, updateAssessmentStore } from '@/lib/store';
+import { getAssessmentStore, updateAssessmentStore, saveExportBuffer } from '@/lib/store';
 import { generateCompletedQuestionnaireXlsx } from '@/lib/xlsxExporter';
 import type { ExportDeliverable } from '@/types/claimtrail';
 
@@ -15,6 +15,21 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const current = getAssessmentStore();
+    if (format !== 'XLSX' && format !== 'xlsx') {
+      return NextResponse.json({ error: 'Only XLSX questionnaire export is currently implemented.' }, { status: 400 });
+    }
+
+    const blockedClaims = current.claims.filter((claim) => {
+      const approved = claim.reviewStatus === 'approved' && (!claim.approval || claim.approval.status === 'approved');
+      return !approved || claim.reviewStatus === 'stale' || claim.reviewStatus === 'rejected' || claim.answerDraftDetails?.evidenceStatus === 'insufficient_evidence';
+    });
+    if (!includeDrafts && blockedClaims.length > 0) {
+      return NextResponse.json({
+        error: 'Final export is not ready. Review or explicitly resolve all pending answers first.',
+        code: 'export_not_ready',
+        blockedClaims: blockedClaims.map((claim) => ({ id: claim.id, code: claim.code, reviewStatus: claim.reviewStatus || 'draft' })),
+      }, { status: 409 });
+    }
 
     let originalBuffer: Buffer | null = null;
     if (current.originalWorkbookPath && fs.existsSync(current.originalWorkbookPath)) {
@@ -33,6 +48,9 @@ export async function POST(req: NextRequest) {
       originalWorkbookBuffer: originalBuffer,
     });
 
+    // Persist exported file to disk for instant downloads
+    saveExportBuffer(exportResult.filename, exportResult.buffer);
+
     const exportId = `exp-${Date.now()}`;
     const newDeliverable: ExportDeliverable = {
       id: exportId,
@@ -45,8 +63,8 @@ export async function POST(req: NextRequest) {
         hour: '2-digit',
         minute: '2-digit',
       }),
-      status: 'Final Auditor Signed',
-      isDraft: false,
+      status: blockedClaims.length === 0 ? 'Final Auditor Signed' : 'Signed Draft',
+      isDraft: blockedClaims.length > 0,
       sizeBytes: exportResult.sizeBytes,
       downloadUrl: `/api/export/download/${exportId}`,
     };

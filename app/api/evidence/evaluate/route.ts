@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { getAssessmentStore, updateAssessmentStore, sanitizeStateForClient } from '@/lib/store';
 import { runDeterministicSecurityChecks } from '@/lib/securityCheckEngine';
 import { analyzeConflictEvidence } from '@/lib/conflictAnalyzer';
@@ -28,6 +29,13 @@ export async function POST(req: Request) {
 
     const updatedState = updateAssessmentStore((prev) => {
       const checkedClaimIds = new Set(selectedClaims.map((claim) => claim.id));
+      const mappingVersions = new Map(
+        selectedClaims.map((claim) => {
+          const mapping = result.mappings[claim.id];
+          const version = crypto.createHash('sha256').update((mapping?.evidence || []).map((item) => item.id).sort().join('|')).digest('hex');
+          return [claim.id, version];
+        })
+      );
       const retainedResults = (prev.checkResults || []).filter((check) => !checkedClaimIds.has(check.claimId));
       const now = new Date().toISOString();
       const nextFindingIds = new Set(analysis.findings.map((finding) => finding.id));
@@ -60,6 +68,11 @@ export async function POST(req: Request) {
 
       return {
         ...prev,
+        claims: prev.claims.map((claim) => {
+          const nextEvidenceVersion = mappingVersions.get(claim.id);
+          if (!nextEvidenceVersion || !claim.answerDraftDetails || claim.answerDraftDetails.evidenceVersion === nextEvidenceVersion) return claim;
+          return { ...claim, reviewStatus: 'stale' as const, approval: undefined };
+        }),
         checkResults: [...retainedResults, ...result.results],
         findings: [...untouchedFindings, ...refreshedFindings, ...mergedFindings],
         conflictAnalyses: [

@@ -46,8 +46,12 @@ export interface SecurityClaim {
   };
   nodes: EvidenceNode[];
   links: EvidenceLink[];
-  reviewStatus?: 'draft' | 'approved' | 'needs_review';
+  reviewStatus?: 'draft' | 'approved' | 'needs_review' | 'rejected' | 'stale';
   answerDraft?: string;
+  editedAnswer?: string;
+  answerVersion?: number;
+  answerHistory?: AnswerVersion[];
+  approval?: AnswerApproval;
   answerConfidence?: number;
   answerDraftDetails?: AnswerDraft;
   // Location in original spreadsheet
@@ -56,7 +60,10 @@ export interface SecurityClaim {
   questionCol?: number;
   answerCol?: number;
   comments?: string;
-  notes?: string;
+  // Expected response format or choices from questionnaire
+  expectedFormat?: string;
+  choices?: string[];
+  staleReason?: string;
   // Specific code/policy citations for dual-engine viewer
   policyCitation?: {
     docName: string;
@@ -81,6 +88,26 @@ export interface SecurityClaim {
     matchConfidence: number;
     description: string;
   };
+}
+
+export interface AnswerVersion {
+  version: number;
+  answer: string;
+  source: 'ai' | 'human_edit' | 'vendor';
+  createdAt: string;
+  reason?: string;
+  reviewer?: string;
+}
+
+export interface AnswerApproval {
+  status: 'approved' | 'rejected';
+  version: number;
+  decidedAt: string;
+  timestamp?: string;
+  reason?: string;
+  notes?: string;
+  reviewer?: string;
+  hasUnresolvedFindingOverride?: boolean;
 }
 
 export type AnswerDraftEvidenceStatus =

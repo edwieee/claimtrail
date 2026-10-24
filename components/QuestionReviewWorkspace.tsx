@@ -1,17 +1,29 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import type { SecurityClaim, EvidenceNode, EvidenceLibraryItem, EvidenceMapping } from '@/types/claimtrail';
+import type { SecurityClaim, EvidenceNode, EvidenceLibraryItem, EvidenceMapping, DeterministicFinding, ConflictItem, AnswerVersion } from '@/types/claimtrail';
 
 interface QuestionReviewWorkspaceProps {
   claims: SecurityClaim[];
   selectedClaimId: string;
+  findings?: DeterministicFinding[];
+  conflicts?: ConflictItem[];
   onSelectClaim: (claim: SecurityClaim) => void;
   onInspectEvidenceNode?: (node: EvidenceNode) => void;
   onInspectEvidenceLibraryItem?: (item: EvidenceLibraryItem) => void;
   onBackToQuestionnaire?: () => void;
   onShowToast: (msg: string, type?: 'info' | 'success' | 'warning') => void;
-  onUpdateClaim?: (claimId: string, updates: { answerText?: string; reviewStatus?: 'draft' | 'needs_review' | 'approved' }) => Promise<void>;
+  onUpdateClaim?: (
+    claimId: string,
+    updates: {
+      answerText?: string;
+      reviewStatus?: 'draft' | 'needs_review' | 'approved' | 'rejected' | 'stale';
+      reason?: string;
+      reviewer?: string;
+      hasUnresolvedFindingOverride?: boolean;
+      staleReason?: string;
+    }
+  ) => Promise<void>;
   onSynthesizeAiDraft?: (claimId: string) => Promise<string | undefined>;
   evidenceMapping?: EvidenceMapping;
   isLoadingEvidence?: boolean;
@@ -22,6 +34,8 @@ interface QuestionReviewWorkspaceProps {
 export function QuestionReviewWorkspace({
   claims,
   selectedClaimId,
+  findings = [],
+  conflicts = [],
   onSelectClaim,
   onInspectEvidenceLibraryItem,
   onBackToQuestionnaire,
@@ -38,6 +52,10 @@ export function QuestionReviewWorkspace({
   const [isEditing, setIsEditing] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [editedAnswer, setEditedAnswer] = useState('');
+  const [reviewReason, setReviewReason] = useState('');
+  const [reviewerName, setReviewerName] = useState('Lead Security Assessor');
+  const [hasOverride, setHasOverride] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Active selected claim
   const activeClaim = useMemo(
@@ -56,16 +74,32 @@ export function QuestionReviewWorkspace({
   );
 
   useEffect(() => {
-    setEditedAnswer(activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
+    setEditedAnswer(activeClaim.editedAnswer || activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
     setIsEditing(false);
+    setHasOverride(Boolean(activeClaim.approval?.hasUnresolvedFindingOverride));
   }, [activeClaim]);
+
+  // Unresolved findings / conflicts linked to this active claim
+  const relatedFindings = useMemo(() => {
+    return findings.filter(
+      (f) =>
+        (f.relatedClaimIds?.includes(activeClaim.id) || f.relatedQuestionCodes?.includes(activeClaim.code)) &&
+        !['resolved', 'accepted_risk', 'false_positive'].includes(f.reviewStatus || '')
+    );
+  }, [findings, activeClaim]);
+
+  const relatedConflicts = useMemo(() => {
+    return conflicts.filter((c) => c.claimCode === activeClaim.code && (c.status === 'open' || !c.status));
+  }, [conflicts, activeClaim]);
+
+  const hasUnresolvedIssues = relatedFindings.length > 0 || relatedConflicts.length > 0 || activeClaim.status === 'red';
 
   const activeIndex = useMemo(
     () => claims.findIndex((c) => c.id === activeClaim.id),
     [claims, activeClaim]
   );
 
-  const currentAnswer = isEditing ? editedAnswer : (activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
+  const currentAnswer = isEditing ? editedAnswer : (activeClaim.editedAnswer || activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
   const currentStatus = activeClaim.reviewStatus || 'draft';
 
   const handlePrev = () => {
@@ -81,20 +115,48 @@ export function QuestionReviewWorkspace({
   };
 
   const handleApprove = async () => {
+    if (hasUnresolvedIssues && !hasOverride) {
+      onShowToast('Approval blocked: Acknowledge unresolved findings and check the override box.', 'warning');
+      return;
+    }
     try {
       if (onUpdateClaim) {
-        await onUpdateClaim(activeClaim.id, { reviewStatus: 'approved' });
+        await onUpdateClaim(activeClaim.id, {
+          reviewStatus: 'approved',
+          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reason: reviewReason.trim() || undefined,
+          hasUnresolvedFindingOverride: hasUnresolvedIssues ? hasOverride : false,
+        });
       }
-      onShowToast(`Answer approved for ${activeClaim.code}`, 'success');
+      onShowToast(`Answer approved for ${activeClaim.code} by ${reviewerName}`, 'success');
     } catch (err: any) {
       onShowToast(err.message || 'Failed to approve answer', 'warning');
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      if (onUpdateClaim) {
+        await onUpdateClaim(activeClaim.id, {
+          reviewStatus: 'rejected',
+          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reason: reviewReason.trim() || 'Rejected during final audit review',
+        });
+      }
+      onShowToast(`Draft rejected for ${activeClaim.code}`, 'warning');
+    } catch (err: any) {
+      onShowToast(err.message || 'Failed to reject draft', 'warning');
     }
   };
 
   const handleMarkNeedsReview = async () => {
     try {
       if (onUpdateClaim) {
-        await onUpdateClaim(activeClaim.id, { reviewStatus: 'needs_review' });
+        await onUpdateClaim(activeClaim.id, {
+          reviewStatus: 'needs_review',
+          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reason: reviewReason.trim() || undefined,
+        });
       }
       onShowToast(`Marked ${activeClaim.code} as Needs Review`, 'warning');
     } catch (err: any) {
@@ -102,13 +164,31 @@ export function QuestionReviewWorkspace({
     }
   };
 
+  const handleMarkStale = async () => {
+    try {
+      if (onUpdateClaim) {
+        await onUpdateClaim(activeClaim.id, {
+          reviewStatus: 'stale',
+          staleReason: reviewReason.trim() || 'Evidence baseline changed; re-verification required',
+        });
+      }
+      onShowToast(`Marked ${activeClaim.code} as Stale`, 'warning');
+    } catch (err: any) {
+      onShowToast(err.message || 'Failed to mark stale', 'warning');
+    }
+  };
+
   const handleSaveDraft = async () => {
     try {
       if (onUpdateClaim) {
-        await onUpdateClaim(activeClaim.id, { answerText: editedAnswer });
+        await onUpdateClaim(activeClaim.id, {
+          answerText: editedAnswer,
+          reviewStatus: 'needs_review',
+          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+        });
       }
       setIsEditing(false);
-      onShowToast(`Answer draft updated for ${activeClaim.code}`, 'success');
+      onShowToast(`Answer draft saved (v${(activeClaim.answerVersion || 1) + 1}) - Needs review`, 'success');
     } catch (err: any) {
       onShowToast(err.message || 'Failed to save draft', 'warning');
     }
@@ -170,7 +250,6 @@ export function QuestionReviewWorkspace({
               {claims.length}
             </span>
           </button>
-
           <div className="h-4 w-[1px] bg-surface-container-highest" />
 
           {/* Breadcrumb Context */}
@@ -274,24 +353,22 @@ export function QuestionReviewWorkspace({
                       onSelectClaim(claim);
                       setIsQuestionDrawerOpen(false);
                     }}
-                    className={`w-full p-3 text-left transition-colors flex flex-col gap-1 ${
-                      isSelected
+                    className={`w-full p-3 text-left transition-colors flex flex-col gap-1 ${isSelected
                         ? 'bg-surface-container-low border-l-2 border-primary-container'
                         : 'hover:bg-surface-container-low/40'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-code-sm text-xs font-semibold text-primary">
                         {claim.code}
                       </span>
                       <span
-                        className={`text-[9.5px] font-code-sm uppercase px-1.5 py-0.2 rounded ${
-                          status === 'approved'
+                        className={`text-[9.5px] font-code-sm uppercase px-1.5 py-0.2 rounded ${status === 'approved'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : status === 'needs_review'
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : 'bg-surface-container text-secondary'
-                        }`}
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-surface-container text-secondary'
+                          }`}
                       >
                         {status}
                       </span>
@@ -418,13 +495,12 @@ export function QuestionReviewWorkspace({
                   <div className="font-body-md text-on-surface leading-relaxed space-y-4 text-[13px] whitespace-pre-line">
                     {activeClaim.answerDraftDetails && (
                       <div className="flex flex-wrap items-center gap-2 text-[11px] font-code-sm">
-                        <span className={`px-1.5 py-0.5 rounded border uppercase ${
-                          activeClaim.answerDraftDetails.evidenceStatus === 'supported'
+                        <span className={`px-1.5 py-0.5 rounded border uppercase ${activeClaim.answerDraftDetails.evidenceStatus === 'supported'
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                             : activeClaim.answerDraftDetails.evidenceStatus === 'conflicting_evidence'
-                            ? 'bg-red-50 text-red-800 border-red-200'
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
-                        }`}>
+                              ? 'bg-red-50 text-red-800 border-red-200'
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}>
                           {activeClaim.answerDraftDetails.evidenceStatus.replaceAll('_', ' ')}
                         </span>
                         <span className="text-secondary">AI draft from {activeClaim.answerDraftDetails.model}</span>
@@ -474,15 +550,14 @@ export function QuestionReviewWorkspace({
                   <span className="text-label-md font-semibold text-on-surface text-[13px]">
                     Retrieved Evidence Mapping
                   </span>
-                  <span className={`text-[11px] font-code-sm px-1.5 py-0.2 rounded border ${
-                    evidenceMapping?.retrievalState === 'supporting'
+                  <span className={`text-[11px] font-code-sm px-1.5 py-0.2 rounded border ${evidenceMapping?.retrievalState === 'supporting'
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                       : evidenceMapping?.retrievalState === 'conflicting'
-                      ? 'bg-red-50 text-red-800 border-red-200'
-                      : evidenceMapping?.retrievalState === 'mixed'
-                      ? 'bg-amber-50 text-amber-800 border-amber-200'
-                      : 'bg-surface-container-low text-secondary border-surface-container-high'
-                  }`}>
+                        ? 'bg-red-50 text-red-800 border-red-200'
+                        : evidenceMapping?.retrievalState === 'mixed'
+                          ? 'bg-amber-50 text-amber-800 border-amber-200'
+                          : 'bg-surface-container-low text-secondary border-surface-container-high'
+                    }`}>
                     {isLoadingEvidence ? 'Retrieving...' : evidenceMapping?.retrievalState || 'insufficient'}
                   </span>
                 </div>
@@ -515,13 +590,12 @@ export function QuestionReviewWorkspace({
                       <article key={item.id} className="p-4 space-y-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`px-1.5 py-0.5 rounded border text-[10px] font-code-sm uppercase ${
-                              item.signal === 'supporting'
+                            <span className={`px-1.5 py-0.5 rounded border text-[10px] font-code-sm uppercase ${item.signal === 'supporting'
                                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                 : item.signal === 'potentially_conflicting'
-                                ? 'bg-red-50 text-red-800 border-red-200'
-                                : 'bg-amber-50 text-amber-800 border-amber-200'
-                            }`}>
+                                  ? 'bg-red-50 text-red-800 border-red-200'
+                                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                              }`}>
                               {item.signal.replace('_', ' ')}
                             </span>
                             <span className="text-xs font-semibold text-on-surface truncate">{item.sourceName}</span>
@@ -588,11 +662,10 @@ export function QuestionReviewWorkspace({
                         activeClaim.codeCitation.lines.map((l, i) => (
                           <div
                             key={i}
-                            className={`flex ${
-                              l.isHighlighted
+                            className={`flex ${l.isHighlighted
                                 ? 'bg-orange-950/40 -mx-3 px-3 border-l-2 border-primary text-amber-200'
                                 : ''
-                            }`}
+                              }`}
                           >
                             <span className="select-none text-slate-600 pr-3 text-right w-6">
                               {l.num}
@@ -678,11 +751,10 @@ export function QuestionReviewWorkspace({
                           </span>
                         </div>
                         <span
-                          className={`px-2 py-0.5 rounded font-code-sm text-[10px] font-semibold border ${
-                            activeClaim.ruleCheck?.status === 'failed'
+                          className={`px-2 py-0.5 rounded font-code-sm text-[10px] font-semibold border ${activeClaim.ruleCheck?.status === 'failed'
                               ? 'bg-red-50 text-red-800 border-red-200'
                               : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          }`}
+                            }`}
                         >
                           {activeClaim.ruleCheck?.status === 'failed' ? 'Failed' : 'Verified'}
                         </span>
@@ -723,50 +795,113 @@ export function QuestionReviewWorkspace({
       {/* ========================================================================= */}
       {/* STICKY BOTTOM ACTION BAR                                                  */}
       {/* ========================================================================= */}
-      <footer className="sticky bottom-0 w-full bg-surface-container-lowest border-t border-surface-container-highest px-8 py-3 z-20 shadow-md flex items-center justify-between shrink-0">
-        {/* Left: Audit Trail / Metadata Info */}
-        <div className="flex items-center gap-2 text-secondary text-[12px]">
-          <span className="material-symbols-outlined text-[15px] text-secondary">commit</span>
-          <span>
-            Target: <code className="font-code-sm text-on-surface font-semibold bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-highest/60">{activeClaim.primarySourcePath}</code>
-          </span>
-          <span className="text-secondary/40">•</span>
-          <span className="text-secondary">Status: <strong className="text-on-surface font-medium capitalize">{currentStatus}</strong></span>
-        </div>
+      <footer className="sticky bottom-0 w-full bg-surface-container-lowest border-t border-surface-container-highest px-6 py-2.5 z-20 shadow-md shrink-0 space-y-2">
+        {/* Unresolved Issues Override Checkbox if applicable */}
+        {hasUnresolvedIssues && (
+          <div className="flex items-center justify-between p-2 rounded bg-amber-50 border border-amber-300 text-xs text-amber-950">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-amber-700 text-sm">warning</span>
+              <label htmlFor="finding-override-check" className="font-semibold cursor-pointer">
+                I acknowledge the {relatedFindings.length + relatedConflicts.length} unresolved issue(s) and explicitly authorize this answer with recorded override note.
+              </label>
+            </div>
+            <input
+              id="finding-override-check"
+              type="checkbox"
+              checked={hasOverride}
+              onChange={(e) => setHasOverride(e.target.checked)}
+              className="w-4 h-4 text-amber-700 rounded border-amber-400 focus:ring-amber-500 cursor-pointer"
+            />
+          </div>
+        )}
 
-        {/* Right: Action Button Group */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={handleRegenerate}
-            disabled={isRegenerating}
-            className="text-secondary hover:text-error text-label-sm flex items-center gap-1 px-3 py-1.5 rounded transition-colors text-[12px] disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[14px]">
-              {isRegenerating ? 'rotate_right' : 'refresh'}
-            </span>
-            <span>{isRegenerating ? 'Synthesizing…' : 'Regenerate Draft'}</span>
-          </button>
-          <button
-            onClick={handleMarkNeedsReview}
-            className="flex items-center gap-1 px-3 py-1.5 text-label-sm font-medium text-secondary hover:text-amber-900 hover:bg-amber-50 rounded border border-surface-container-highest/60 transition-colors text-[12px]"
-          >
-            <span className="material-symbols-outlined text-[15px]">flag</span>
-            <span>Mark as Needs Review</span>
-          </button>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-1 px-3.5 py-1.5 text-label-sm font-medium text-on-surface bg-surface-container-lowest border border-surface-container-highest hover:bg-surface-container-low rounded transition-colors text-[12px]"
-          >
-            <span className="material-symbols-outlined text-secondary text-[15px]">edit</span>
-            <span>{isEditing ? 'Close Editor' : 'Edit Answer'}</span>
-          </button>
-          <button
-            onClick={handleApprove}
-            className="flex items-center gap-1.5 px-4 py-2 text-label-sm font-semibold text-on-primary bg-primary-container hover:bg-[#ea580c] rounded transition-colors text-[12px] shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            <span>Approve Answer</span>
-          </button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Left: Metadata info & Statutory disclaimer */}
+          <div className="flex flex-col gap-0.5 text-secondary text-[11px]">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[14px] text-secondary">commit</span>
+              <span>Target: <code className="font-code-sm text-on-surface font-semibold bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-highest/60">{activeClaim.primarySourcePath}</code></span>
+              <span className="text-secondary/40">•</span>
+              <span>Status: <strong className="text-on-surface font-medium capitalize">{currentStatus}</strong></span>
+              <span className="text-secondary/40">•</span>
+              <span>v{activeClaim.answerVersion || 1}</span>
+            </div>
+            <div className="text-[10px] text-secondary/70 italic">
+              * Internal review verification only; does not certify statutory compliance or liability indemnity.
+            </div>
+          </div>
+
+          {/* Right: Review Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="text-secondary hover:text-error text-label-sm flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors text-[11px] disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[13px]">
+                {isRegenerating ? 'rotate_right' : 'refresh'}
+              </span>
+              <span>{isRegenerating ? 'Synthesizing…' : 'Regenerate Draft'}</span>
+            </button>
+
+            <button
+              onClick={handleMarkStale}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-label-sm font-medium text-orange-900 bg-orange-50 hover:bg-orange-100 rounded border border-orange-200 transition-colors text-[11px]"
+              title="Flag that evidence has changed and requires re-review"
+            >
+              <span className="material-symbols-outlined text-[14px]">history</span>
+              <span>Mark Stale</span>
+            </button>
+
+            <button
+              onClick={handleMarkNeedsReview}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-label-sm font-medium text-secondary hover:text-amber-900 hover:bg-amber-50 rounded border border-surface-container-highest/60 transition-colors text-[11px]"
+            >
+              <span className="material-symbols-outlined text-[14px]">flag</span>
+              <span>Needs Review</span>
+            </button>
+
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center gap-1 px-3 py-1.5 text-label-sm font-medium text-on-surface bg-surface-container-lowest border border-surface-container-highest hover:bg-surface-container-low rounded transition-colors text-[11px]"
+            >
+              <span className="material-symbols-outlined text-secondary text-[14px]">edit</span>
+              <span>{isEditing ? 'Close Editor' : 'Edit Answer'}</span>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <input
+                value={reviewerName}
+                onChange={(event) => setReviewerName(event.target.value)}
+                placeholder="Reviewer Name"
+                aria-label="Reviewer Name"
+                className="h-7 w-32 px-2 text-[11px] border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+              />
+              <input
+                value={reviewReason}
+                onChange={(event) => setReviewReason(event.target.value)}
+                placeholder="Note / Override justification"
+                aria-label="Approval or rejection note"
+                className="h-7 w-44 px-2 text-[11px] border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+              />
+            </div>
+
+            <button
+              onClick={handleReject}
+              className="flex items-center gap-1 px-3 py-1.5 text-label-sm font-medium text-rose-800 hover:bg-rose-50 rounded border border-rose-200 transition-colors text-[11px]"
+            >
+              <span className="material-symbols-outlined text-[14px]">close</span>
+              <span>Reject</span>
+            </button>
+
+            <button
+              onClick={handleApprove}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-label-sm font-semibold text-on-primary bg-primary-container hover:bg-[#ea580c] rounded transition-colors text-[11px] shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[15px]">check_circle</span>
+              <span>Approve Answer</span>
+            </button>
+          </div>
         </div>
       </footer>
     </div>

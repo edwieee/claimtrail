@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { SecurityClaim, ConflictItem, ExportDeliverable } from '@/types/claimtrail';
+import type { SecurityClaim, ConflictItem, ExportDeliverable, DeterministicFinding, SecurityCheckResult, EvidenceSourceFile } from '@/types/claimtrail';
 
 interface ExportsViewProps {
   claims: SecurityClaim[];
   conflicts: ConflictItem[];
+  findings?: DeterministicFinding[];
+  checkResults?: SecurityCheckResult[];
+  sources?: EvidenceSourceFile[];
   exportHistory?: ExportDeliverable[];
   assessmentName?: string;
   onShowToast: (msg: string, type?: 'info' | 'success' | 'warning') => void;
@@ -16,6 +19,9 @@ interface ExportsViewProps {
 export function ExportsView({
   claims,
   conflicts,
+  findings = [],
+  checkResults = [],
+  sources = [],
   exportHistory = [],
   assessmentName = 'AcmeCorp Enterprise Security 2026',
   onShowToast,
@@ -23,7 +29,6 @@ export function ExportsView({
   onExportGenerated,
 }: ExportsViewProps) {
   const [includeXlsx, setIncludeXlsx] = useState(true);
-  const [includePdf, setIncludePdf] = useState(false);
   const [includeHashes, setIncludeHashes] = useState(true);
   const [embedLinks, setEmbedLinks] = useState(true);
   const [includeDrafts, setIncludeDrafts] = useState(true);
@@ -31,7 +36,7 @@ export function ExportsView({
 
   // Dynamic metrics from actual claims
   const approvedCount = useMemo(
-    () => claims.filter((c) => c.reviewStatus === 'approved').length,
+    () => claims.filter((c) => c.reviewStatus === 'approved' && (!c.approval || c.approval.status === 'approved')).length,
     [claims]
   );
   const draftCount = useMemo(
@@ -43,9 +48,15 @@ export function ExportsView({
     [claims]
   );
   const openConflictsCount = useMemo(
-    () => conflicts.filter((c) => c.status === 'open' || !c.status).length,
-    [conflicts]
+    () => conflicts.filter((c) => c.status === 'open' || !c.status).length + findings.filter((finding) => !['resolved', 'accepted_risk', 'false_positive'].includes(finding.reviewStatus || '')).length,
+    [conflicts, findings]
   );
+
+  const rejectedCount = claims.filter((claim) => claim.reviewStatus === 'rejected').length;
+  const staleCount = claims.filter((claim) => claim.reviewStatus === 'stale').length;
+  const insufficientCount = claims.filter((claim) => claim.answerDraftDetails?.evidenceStatus === 'insufficient_evidence').length;
+  const unresolvedFindingCount = findings.filter((finding) => !['resolved', 'accepted_risk', 'false_positive'].includes(finding.reviewStatus || '')).length;
+  const readinessBlocked = claims.length === 0 || draftCount > 0 || rejectedCount > 0 || staleCount > 0 || insufficientCount > 0;
 
   const readinessPercent = useMemo(() => {
     if (claims.length === 0) return 0;
@@ -61,7 +72,7 @@ export function ExportsView({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          format: includeXlsx ? 'XLSX' : 'PDF',
+          format: 'XLSX',
           includeDrafts,
           includeHashes,
           embedLinks,
@@ -155,7 +166,7 @@ export function ExportsView({
               <span className="text-xs uppercase font-semibold text-secondary tracking-wider">
                 Select Deliverable Formats
               </span>
-              <span className="text-xs text-secondary font-code-sm">Primary target auto-selected</span>
+                <span className="text-xs text-secondary font-code-sm">XLSX questionnaire export</span>
             </div>
 
             {/* Deliverable Card 1 (Primary XLSX) */}
@@ -206,41 +217,6 @@ export function ExportsView({
               </div>
             </div>
 
-            {/* Deliverable Card 2 (Secondary PDF Dossier) */}
-            <div
-              onClick={() => setIncludePdf(!includePdf)}
-              className={`p-4 bg-surface-container-lowest rounded-lg relative shadow-xs transition-all cursor-pointer ${
-                includePdf
-                  ? 'border border-primary-container/80'
-                  : 'border border-surface-container-highest opacity-75'
-              }`}
-            >
-              <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-surface-container text-secondary border border-surface-container-highest">
-                  Supplementary
-                </span>
-                <input
-                  type="checkbox"
-                  checked={includePdf}
-                  onChange={(e) => setIncludePdf(e.target.checked)}
-                  className="w-4 h-4 text-primary-container rounded border-surface-container-highest focus:ring-primary-container"
-                />
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-800 shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
-                </div>
-                <div className="pr-24">
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-2">
-                    Audit Findings &amp; Evidence Dossier (.PDF)
-                  </h3>
-                  <p className="text-body-md font-body-md text-secondary mt-1 text-xs leading-relaxed">
-                    Complete audit report with cited policy excerpts, code AST verification hashes, and open discrepancy notes for third-party auditors.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Package Configuration & Cryptographic Integrity Card */}
@@ -343,9 +319,9 @@ export function ExportsView({
                   Pre-flight checks before generating deliverables
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-label-md font-semibold font-code-sm text-xs">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                Ready {readinessPercent}%
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-label-md font-semibold font-code-sm text-xs ${readinessBlocked ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
+                <span className={`w-2 h-2 rounded-full ${readinessBlocked ? 'bg-amber-500' : 'bg-emerald-600'}`} />
+                {readinessBlocked ? `Review Required · ${readinessPercent}% approved` : 'Ready for final export'}
               </div>
             </div>
 
@@ -382,7 +358,7 @@ export function ExportsView({
                       2. Evidence Sources Connected
                     </span>
                     <span className="text-[11px] text-secondary font-code-sm">
-                      Policy PDF &amp; GitHub AST Active
+                      {sources.filter((source) => source.type === 'pdf' || source.type === 'repo').length} policy/repository sources available · {checkResults.length} checks recorded
                     </span>
                   </div>
                 </div>
@@ -402,7 +378,7 @@ export function ExportsView({
                       3. Answers Reviewed &amp; Approved
                     </span>
                     <span className="text-[11px] text-amber-900 font-code-sm">
-                      {approvedCount} of {claims.length} approved, {draftCount} pending
+                      {approvedCount} of {claims.length} approved, {draftCount} pending · {staleCount} stale
                     </span>
                   </div>
                 </div>
@@ -432,7 +408,7 @@ export function ExportsView({
                       4. Open Findings &amp; Policy Conflicts
                     </span>
                     <span className="text-[11px] text-amber-900 font-code-sm">
-                      {openConflictsCount} open findings flagged
+                      {openConflictsCount} unresolved findings flagged
                     </span>
                   </div>
                 </div>

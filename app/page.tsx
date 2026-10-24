@@ -302,7 +302,14 @@ export default function DashboardPage() {
   // Update Claim (Approve, Edit, Mark Needs Review)
   const handleUpdateClaim = async (
     claimId: string,
-    updates: { answerText?: string; reviewStatus?: 'draft' | 'needs_review' | 'approved' }
+    updates: {
+      answerText?: string;
+      reviewStatus?: 'draft' | 'needs_review' | 'approved' | 'rejected' | 'stale';
+      reason?: string;
+      reviewer?: string;
+      hasUnresolvedFindingOverride?: boolean;
+      staleReason?: string;
+    }
   ) => {
     const res = await fetch('/api/claims/update', {
       method: 'POST',
@@ -465,7 +472,9 @@ export default function DashboardPage() {
           <OverviewDashboard
             claims={filteredClaims}
             conflicts={assessment.conflicts || []}
+            findings={assessment.findings || []}
             sources={assessment.sources || []}
+            targetFilename={assessment.targetFilename}
             onSelectQuestionForReview={handleSelectQuestionForReview}
             onNavigateToQuestionnaire={() => {
               setCurrentNav('questionnaire');
@@ -473,6 +482,7 @@ export default function DashboardPage() {
             }}
             onNavigateToSources={() => setCurrentNav('sources')}
             onNavigateToFindings={() => setCurrentNav('findings')}
+            onNavigateToExports={() => setCurrentNav('exports')}
             onNewAssessment={() => {
               setCurrentNav('questionnaire');
               setQuestionnaireMode('catalog');
@@ -497,6 +507,8 @@ export default function DashboardPage() {
             <QuestionReviewWorkspace
               claims={filteredClaims}
               selectedClaimId={selectedClaimId}
+              findings={assessment.findings || []}
+              conflicts={assessment.conflicts || []}
               onSelectClaim={(c) => setSelectedClaimId(c.id)}
               onInspectEvidenceNode={(node) => {
                 setInspectedNode(node);
@@ -547,6 +559,8 @@ export default function DashboardPage() {
           <ExportsView
             claims={assessment.claims || []}
             conflicts={assessment.conflicts || []}
+            findings={assessment.findings || []}
+            sources={assessment.sources || []}
             exportHistory={assessment.exportHistory || []}
             assessmentName={assessment.assessmentName}
             onShowToast={showToast}

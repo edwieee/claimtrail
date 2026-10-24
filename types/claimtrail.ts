@@ -54,6 +54,8 @@ export interface SecurityClaim {
   rowNumber?: number;
   questionCol?: number;
   answerCol?: number;
+  comments?: string;
+  notes?: string;
   // Specific code/policy citations for dual-engine viewer
   policyCitation?: {
     docName: string;

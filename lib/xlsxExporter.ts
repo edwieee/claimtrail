@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import crypto from 'crypto';
 import type { SecurityClaim } from '@/types/claimtrail';
 import { saveExportBuffer } from './store';
+import { safeLoadWorkbook } from './xlsxParser';
 
 export interface ExportWorkbookOptions {
   assessmentName?: string;
@@ -30,7 +31,7 @@ export async function generateCompletedQuestionnaireXlsx(
   // If original workbook buffer is provided, load it to preserve original formatting
   if (options?.originalWorkbookBuffer) {
     try {
-      await workbook.xlsx.load(options.originalWorkbookBuffer as any);
+      workbook = await safeLoadWorkbook(options.originalWorkbookBuffer);
     } catch (err) {
       console.warn('Could not load original workbook buffer, creating new workbook:', err);
       workbook = new ExcelJS.Workbook();

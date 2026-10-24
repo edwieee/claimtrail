@@ -41,7 +41,7 @@ export function AppSidebar({
       : currentNav;
 
   return (
-    <aside className="w-60 shrink-0 h-screen bg-surface-container-lowest border-r border-surface-container-highest flex flex-col justify-between p-4 select-none z-30">
+    <aside className="hidden md:flex w-60 shrink-0 h-screen bg-surface-container-lowest border-r border-surface-container-highest flex-col justify-between p-4 select-none z-30">
       {/* Top Brand & Main Nav */}
       <div className="flex flex-col gap-5">
         {/* Brand Header */}
@@ -64,9 +64,6 @@ export function AppSidebar({
               </span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-secondary hover:text-on-surface cursor-pointer text-base">
-            swap_vert
-          </span>
         </div>
 
         {/* Import Batch CTA Button */}
@@ -144,14 +141,6 @@ export function AppSidebar({
           <span>Settings</span>
         </button>
 
-        <button
-          onClick={onOpenSettings}
-          className="flex items-center gap-2.5 px-3 py-2 text-secondary hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors text-left"
-        >
-          <span className="material-symbols-outlined text-[18px]">help_outline</span>
-          <span>Help & Documentation</span>
-        </button>
-
         {/* User Account Chip */}
         <div className="mt-2 pt-3 border-t border-surface-container-high flex items-center justify-between px-1">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -167,9 +156,6 @@ export function AppSidebar({
               </span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-secondary text-base hover:text-on-surface cursor-pointer shrink-0">
-            more_vert
-          </span>
         </div>
       </div>
     </aside>

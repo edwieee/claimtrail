@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { SecurityClaim, ConflictItem } from '@/types/claimtrail';
+import type { SecurityClaim, ConflictItem, EvidenceSourceFile } from '@/types/claimtrail';
 import { deriveMetrics } from '@/data/demoData';
 
 interface OverviewDashboardProps {
   claims: SecurityClaim[];
   conflicts: ConflictItem[];
+  sources: EvidenceSourceFile[];
   onSelectQuestionForReview: (claim: SecurityClaim) => void;
   onNavigateToQuestionnaire: () => void;
   onNavigateToSources: () => void;
@@ -17,6 +18,7 @@ interface OverviewDashboardProps {
 export function OverviewDashboard({
   claims,
   conflicts,
+  sources,
   onSelectQuestionForReview,
   onNavigateToQuestionnaire,
   onNavigateToSources,
@@ -24,9 +26,6 @@ export function OverviewDashboard({
   onNewAssessment,
 }: OverviewDashboardProps) {
   const metrics = deriveMetrics(claims, conflicts);
-  const [activeSegment, setActiveSegment] = useState<'current' | 'soc2' | 'iso'>('current');
-  const [timeRange, setTimeRange] = useState<'30d' | '90d'>('30d');
-
   return (
     <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-background">
       <div className="max-w-[1520px] mx-auto space-y-6">
@@ -43,38 +42,9 @@ export function OverviewDashboard({
             </p>
           </div>
 
-          {/* Segmented Filter Control */}
-          <div className="inline-flex p-0.5 rounded-lg bg-surface-container-low border border-surface-container-highest">
-            <button
-              onClick={() => setActiveSegment('current')}
-              className={`px-3 py-1 font-label-md text-label-md rounded transition-all ${
-                activeSegment === 'current'
-                  ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs border border-surface-container-highest'
-                  : 'text-secondary hover:text-on-surface'
-              }`}
-            >
-              Current Assessment
-            </button>
-            <button
-              onClick={() => setActiveSegment('soc2')}
-              className={`px-3 py-1 font-label-md text-label-md rounded transition-all ${
-                activeSegment === 'soc2'
-                  ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs border border-surface-container-highest'
-                  : 'text-secondary hover:text-on-surface'
-              }`}
-            >
-              SOC 2 Type II
-            </button>
-            <button
-              onClick={() => setActiveSegment('iso')}
-              className={`px-3 py-1 font-label-md text-label-md rounded transition-all ${
-                activeSegment === 'iso'
-                  ? 'bg-surface-container-lowest text-on-surface font-semibold shadow-xs border border-surface-container-highest'
-                  : 'text-secondary hover:text-on-surface'
-              }`}
-            >
-              Vendor ISO 27001
-            </button>
+          <div className="text-right text-label-sm font-label-sm text-secondary">
+            <div className="font-semibold text-on-surface">{claims.length} claims in scope</div>
+            <div>{sources.length} evidence sources connected</div>
           </div>
         </div>
 
@@ -199,28 +169,6 @@ export function OverviewDashboard({
                     <span className="w-2 h-2 rounded-full bg-primary-container" />
                     Target: Oct 30 (100%)
                   </span>
-                  <div className="flex border border-surface-container-highest rounded overflow-hidden">
-                    <button
-                      onClick={() => setTimeRange('30d')}
-                      className={`px-2 py-1 text-label-sm font-label-sm transition-colors ${
-                        timeRange === '30d'
-                          ? 'bg-surface-container-lowest font-semibold text-on-surface'
-                          : 'bg-surface-container-low text-secondary'
-                      }`}
-                    >
-                      30d
-                    </button>
-                    <button
-                      onClick={() => setTimeRange('90d')}
-                      className={`px-2 py-1 text-label-sm font-label-sm border-l border-surface-container-highest transition-colors ${
-                        timeRange === '90d'
-                          ? 'bg-surface-container-lowest font-semibold text-on-surface'
-                          : 'bg-surface-container-low text-secondary'
-                      }`}
-                    >
-                      90d
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -300,13 +248,13 @@ export function OverviewDashboard({
                     className="flex items-center gap-1 px-2.5 py-1 text-label-sm font-label-sm rounded border border-surface-container-highest hover:bg-surface-container-low text-secondary transition-colors"
                   >
                     <span className="material-symbols-outlined text-xs">filter_list</span>
-                    <span>Filter (4)</span>
+                    <span>View {conflicts.length} findings</span>
                   </button>
                   <button
                     onClick={onNavigateToQuestionnaire}
                     className="text-label-sm font-label-sm text-primary font-medium hover:underline flex items-center gap-0.5"
                   >
-                    View all 38
+                    View all {claims.length}
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
                   </button>
                 </div>
@@ -397,7 +345,7 @@ export function OverviewDashboard({
                   </h3>
                 </div>
                 <span className="px-2 py-0.5 font-code-sm text-code-sm bg-surface-container-low rounded border border-surface-container-highest text-secondary font-medium">
-                  3 active
+                  {sources.length} active
                 </span>
               </div>
 

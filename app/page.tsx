@@ -378,9 +378,35 @@ export default function DashboardPage() {
           alertCount={assessment.conflicts?.length || 0}
           isRunningCheck={isRunningCheck}
           onRunEvidenceCheck={handleRunEvidenceCheck}
+          onOpenFindings={() => setCurrentNav('findings')}
           primaryActionLabel={primaryActionConfig.label}
           onPrimaryAction={primaryActionConfig.action}
         />
+
+        <nav className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-surface-container-highest bg-surface-container-lowest px-3 py-2 shrink-0">
+          {[
+            ['overview', 'Overview'],
+            ['questionnaire', 'Questionnaire'],
+            ['sources', 'Sources'],
+            ['findings', 'Findings'],
+            ['exports', 'Exports'],
+          ].map(([nav, label]) => (
+            <button
+              key={nav}
+              onClick={() => {
+                setCurrentNav(nav as NavItem);
+                if (nav === 'questionnaire') setQuestionnaireMode('catalog');
+              }}
+              className={`shrink-0 rounded px-2.5 py-1.5 text-label-sm font-label-sm ${
+                currentNav === nav || (nav === 'questionnaire' && (currentNav === 'review' || currentNav === 'questions'))
+                  ? 'bg-on-surface text-surface-container-lowest'
+                  : 'text-secondary hover:bg-surface-container-low'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
         {/* ── Screen Router ── */}
 
@@ -389,6 +415,7 @@ export default function DashboardPage() {
           <OverviewDashboard
             claims={filteredClaims}
             conflicts={assessment.conflicts || []}
+            sources={assessment.sources || []}
             onSelectQuestionForReview={handleSelectQuestionForReview}
             onNavigateToQuestionnaire={() => {
               setCurrentNav('questionnaire');

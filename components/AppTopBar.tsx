@@ -9,6 +9,7 @@ interface AppTopBarProps {
   alertCount: number;
   isRunningCheck: boolean;
   onRunEvidenceCheck: () => void;
+  onOpenFindings: () => void;
   primaryActionLabel?: string;
   onPrimaryAction?: () => void;
 }
@@ -20,6 +21,7 @@ export function AppTopBar({
   alertCount,
   isRunningCheck,
   onRunEvidenceCheck,
+  onOpenFindings,
   primaryActionLabel,
   onPrimaryAction,
 }: AppTopBarProps) {
@@ -28,7 +30,7 @@ export function AppTopBar({
       {/* Left side: Breadcrumb & Context Switcher */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex items-center gap-1.5 font-label-md text-label-md text-secondary shrink-0">
-          <span className="hover:text-on-surface cursor-pointer">ClaimTrail</span>
+          <span>ClaimTrail</span>
           {breadcrumb.map((crumb, idx) => (
             <React.Fragment key={idx}>
               <span className="text-secondary/50 text-[11px]">/</span>
@@ -36,7 +38,7 @@ export function AppTopBar({
                 className={
                   idx === breadcrumb.length - 1
                     ? 'text-on-surface font-semibold truncate max-w-[200px]'
-                    : 'hover:text-on-surface cursor-pointer'
+                    : 'text-secondary'
                 }
               >
                 {crumb}
@@ -48,7 +50,7 @@ export function AppTopBar({
         <div className="hidden sm:block h-4 w-[1px] bg-surface-container-high mx-1" />
 
         {/* Assessment Selector Dropdown Pill */}
-        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high font-label-md text-label-md text-on-surface hover:border-outline-variant cursor-pointer transition-colors shrink-0">
+        <div className="hidden 2xl:flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high font-label-md text-label-md text-on-surface shrink-0">
           <span className="w-2 h-2 rounded-full bg-primary-container shrink-0" />
           <span className="font-medium text-xs">AcmeCorp Enterprise Security 2026</span>
           <span className="material-symbols-outlined text-sm text-secondary">unfold_more</span>
@@ -74,18 +76,6 @@ export function AppTopBar({
           </span>
         </div>
 
-        {/* Trailing Secondary Action: Run AI Check */}
-        <button
-          onClick={onRunEvidenceCheck}
-          disabled={isRunningCheck}
-          className="hidden sm:flex items-center gap-1.5 h-8 px-3 rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md border border-surface-container-highest hover:bg-surface-container-low transition-colors shadow-xs disabled:opacity-60"
-        >
-          <span className="material-symbols-outlined text-[16px] text-primary">
-            {isRunningCheck ? 'refresh' : 'auto_fix_high'}
-          </span>
-          <span>{isRunningCheck ? 'Evaluating...' : 'Run AI Check'}</span>
-        </button>
-
         {/* Primary Call To Action (Burnt Copper) */}
         <button
           onClick={onPrimaryAction || onRunEvidenceCheck}
@@ -103,6 +93,7 @@ export function AppTopBar({
         {/* Trailing Utility Icons */}
         <div className="hidden lg:flex items-center gap-1">
           <button
+            onClick={onOpenFindings}
             className="p-1.5 text-secondary hover:text-on-surface hover:bg-surface-container-low rounded transition-colors relative"
             title={`${alertCount} Open Exceptions`}
           >
@@ -110,12 +101,6 @@ export function AppTopBar({
             {alertCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-container rounded-full" />
             )}
-          </button>
-          <button
-            className="p-1.5 text-secondary hover:text-on-surface hover:bg-surface-container-low rounded transition-colors"
-            title="Audit Trail History"
-          >
-            <span className="material-symbols-outlined text-lg">history</span>
           </button>
         </div>
 

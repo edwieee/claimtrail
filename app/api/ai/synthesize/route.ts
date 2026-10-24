@@ -1,78 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAssessmentStore, updateAssessmentStore } from '@/lib/store';
-import { synthesizeGroundedAnswer } from '@/lib/aiSynthesizer';
-import type { SecurityClaim } from '@/types/claimtrail';
+import { getAssessmentStore, updateAssessmentStore, sanitizeStateForClient } from '@/lib/store';
+import { retrieveEvidenceForClaim } from '@/lib/evidenceRetriever';
+import { DraftingError, generateEvidenceGroundedDraft } from '@/lib/aiDrafting';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { claimId, model } = body;
+    const claimId = typeof body?.claimId === 'string' ? body.claimId : '';
+    const model = typeof body?.model === 'string' && body.model.length <= 100 ? body.model : undefined;
+    const replace = body?.replace === true;
 
     const current = getAssessmentStore();
-    const apiKey = current.settings?.openaiApiKey;
-
-    if (claimId && claimId !== 'all') {
-      const claim = current.claims.find((c) => c.id === claimId || c.code === claimId);
-      if (!claim) {
-        return NextResponse.json({ error: `Claim '${claimId}' not found.` }, { status: 404 });
-      }
-
-      const synthesis = await synthesizeGroundedAnswer(claim, {
-        apiKey,
-        model: model || current.settings?.activeModel,
-      });
-
-      const updatedClaim: SecurityClaim = {
-        ...claim,
-        answerDraft: synthesis.answer,
-        answerConfidence: synthesis.confidence,
-        statusDetail: `AI Synthesized with ${synthesis.model} (${synthesis.sourcesCount} verified sources)`,
-      };
-
-      const updatedState = updateAssessmentStore((prev) => ({
-        ...prev,
-        claims: prev.claims.map((c) => (c.id === claim.id ? updatedClaim : c)),
-        updatedAt: new Date().toISOString(),
-      }));
-
-      return NextResponse.json({
-        success: true,
-        claim: updatedClaim,
-        state: updatedState,
-      });
+    if (!claimId || claimId === 'all') {
+      return NextResponse.json({ error: 'A single claimId is required. Bulk drafting is intentionally disabled.' }, { status: 400 });
     }
 
-    // Synthesize for all claims
-    const updatedClaims: SecurityClaim[] = [];
-    for (const claim of current.claims) {
-      const synthesis = await synthesizeGroundedAnswer(claim, {
-        apiKey,
-        model: model || current.settings?.activeModel,
-      });
-      updatedClaims.push({
-        ...claim,
-        answerDraft: synthesis.answer,
-        answerConfidence: synthesis.confidence,
-        statusDetail: `AI Synthesized with ${synthesis.model} (${synthesis.sourcesCount} verified sources)`,
-      });
+    const claim = current.claims.find((item) => item.id === claimId || item.code === claimId);
+    if (!claim) return NextResponse.json({ error: `Claim '${claimId}' not found.` }, { status: 404 });
+
+    const existingDraft = claim.answerDraftDetails;
+    const hasManualEdit = Boolean(existingDraft && claim.answerDraft && claim.answerDraft !== existingDraft.draftAnswer);
+    if (hasManualEdit && !replace) {
+      return NextResponse.json({ success: true, claim, state: sanitizeStateForClient(current), preservedManualEdit: true });
     }
+
+    const mapping = retrieveEvidenceForClaim(claim, current.sources, { limit: 8 });
+    const findings = (current.findings || []).filter((finding) => finding.relatedClaimIds.includes(claim.id));
+    const draft = await generateEvidenceGroundedDraft(claim, mapping, findings, { model });
+    const updatedClaim = {
+      ...claim,
+      answerDraft: draft.draftAnswer,
+      answerDraftDetails: draft,
+      answerConfidence: undefined,
+      statusDetail: `AI draft generated with ${draft.model}; human review required.`,
+    };
 
     const updatedState = updateAssessmentStore((prev) => ({
       ...prev,
-      claims: updatedClaims,
+      claims: prev.claims.map((item) => (item.id === claim.id ? updatedClaim : item)),
       updatedAt: new Date().toISOString(),
     }));
 
     return NextResponse.json({
       success: true,
-      count: updatedClaims.length,
-      claims: updatedClaims,
-      state: updatedState,
+      claim: updatedClaim,
+      state: sanitizeStateForClient(updatedState),
     });
   } catch (err: any) {
-    console.error('AI synthesis error:', err);
+    if (err instanceof DraftingError) {
+      return NextResponse.json({ error: err.message, code: err.code }, { status: err.status });
+    }
+    console.error('AI drafting request failed:', err?.message || 'unknown error');
     return NextResponse.json(
-      { error: err?.message || 'Failed to synthesize answer.' },
+      { error: 'Failed to generate an evidence-grounded draft.' },
       { status: 500 }
     );
   }

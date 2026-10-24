@@ -21,6 +21,8 @@ import type {
   NavItem,
   AssessmentState,
   ExportDeliverable,
+  EvidenceMapping,
+  FindingReviewStatus,
 } from '@/types/claimtrail';
 
 export default function DashboardPage() {
@@ -53,6 +55,8 @@ export default function DashboardPage() {
   });
 
   const [isLoadingAssessment, setIsLoadingAssessment] = useState(true);
+  const [evidenceMappings, setEvidenceMappings] = useState<Record<string, EvidenceMapping>>({});
+  const [isLoadingEvidence, setIsLoadingEvidence] = useState(false);
 
   // Claim selection
   const [selectedClaimId, setSelectedClaimId] = useState(DEMO_CLAIMS[0]?.id || 'claim-1');
@@ -120,6 +124,33 @@ export default function DashboardPage() {
     return list.find((c) => c.id === selectedClaimId || c.code === selectedClaimId) ?? list[0] ?? DEMO_CLAIMS[0];
   }, [assessment.claims, selectedClaimId]);
 
+  const refreshEvidenceMappings = useCallback(async (claimId?: string) => {
+    setIsLoadingEvidence(true);
+    try {
+      const query = claimId
+        ? `/api/evidence/retrieve?claimId=${encodeURIComponent(claimId)}&limit=6`
+        : '/api/evidence/retrieve?all=true&limit=4';
+      const res = await fetch(query);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Evidence retrieval failed.');
+      if (claimId) {
+        setEvidenceMappings((previous) => ({ ...previous, [data.mapping.claimId]: data.mapping }));
+      } else {
+        setEvidenceMappings(data.mappings || {});
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Evidence retrieval failed.', 'warning');
+    } finally {
+      setIsLoadingEvidence(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (currentNav === 'questionnaire') {
+      refreshEvidenceMappings(questionnaireMode === 'review' ? selectedClaimId : undefined);
+    }
+  }, [currentNav, questionnaireMode, selectedClaimId, assessment.claims, assessment.sources, refreshEvidenceMappings]);
+
   // Handlers for cross-screen navigation
   const handleSelectQuestionForReview = (claim: SecurityClaim) => {
     setSelectedClaimId(claim.id);
@@ -138,13 +169,15 @@ export default function DashboardPage() {
   };
 
   // Run Real Deterministic Evidence Evaluation
-  const handleRunEvidenceCheck = async () => {
+  const handleRunEvidenceCheck = async (claimId?: string) => {
     setIsRunningCheck(true);
     showToast('Executing deterministic security rules against repository & policies...', 'info');
 
     try {
       const res = await fetch('/api/evidence/evaluate', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(claimId ? { claimId } : {}),
       });
       const data = await res.json();
 
@@ -154,7 +187,7 @@ export default function DashboardPage() {
 
       setAssessment(data.state);
       showToast(
-        `Evidence Check complete: ${data.claimsCount} claims evaluated, ${data.conflictsCount} exceptions flagged.`,
+        `Evidence Check complete: ${data.checksCount || 0} checks run, ${data.findingsCount || 0} findings requiring review.`,
         'success'
       );
     } catch (err: any) {
@@ -229,6 +262,22 @@ export default function DashboardPage() {
     showToast(`GitHub repository connected: ${data.source.extractedTitle}`, 'success');
   };
 
+  // Disconnect / Remove Evidence Source
+  const handleRemoveSource = async (sourceId: string, sourceName?: string) => {
+    try {
+      const url = sourceId
+        ? `/api/sources/connect-repo?sourceId=${encodeURIComponent(sourceId)}`
+        : `/api/sources/connect-repo?sourceName=${encodeURIComponent(sourceName || '')}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to remove source');
+      setAssessment(data.state);
+      showToast('Evidence source removed.', 'info');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to remove source', 'warning');
+    }
+  };
+
   // Load Authentic Sample Assessment Bundle
   const handleLoadSample = async () => {
     showToast('Loading authentic SIG Lite XLSX and Policy PDF sample bundle...', 'info');
@@ -277,7 +326,7 @@ export default function DashboardPage() {
     const res = await fetch('/api/ai/synthesize', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ claimId }),
+      body: JSON.stringify({ claimId, replace: true }),
     });
 
     const data = await res.json();
@@ -292,12 +341,13 @@ export default function DashboardPage() {
   // Resolve or Review Finding
   const handleResolveFinding = async (
     findingId: string,
-    status: 'open' | 'reviewed' | 'resolved'
+    status: FindingReviewStatus,
+    notes?: string,
   ) => {
     const res = await fetch('/api/findings/resolve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ findingId, status }),
+      body: JSON.stringify({ findingId, status, notes }),
     });
 
     const data = await res.json();
@@ -436,6 +486,7 @@ export default function DashboardPage() {
           questionnaireMode === 'catalog' ? (
             <QuestionnaireView
               claims={filteredClaims}
+              evidenceMappings={evidenceMappings}
               targetFilename={assessment.targetFilename}
               onSelectQuestionForReview={handleSelectQuestionForReview}
               onOpenReviewWorkspace={() => setQuestionnaireMode('review')}
@@ -456,6 +507,10 @@ export default function DashboardPage() {
               onShowToast={showToast}
               onUpdateClaim={handleUpdateClaim}
               onSynthesizeAiDraft={handleSynthesizeAiDraft}
+              evidenceMapping={evidenceMappings[activeClaim.id]}
+              isLoadingEvidence={isLoadingEvidence}
+              onRefreshEvidence={() => refreshEvidenceMappings(activeClaim.id)}
+              onRunSecurityCheck={() => handleRunEvidenceCheck(activeClaim.id)}
             />
           )
         )}
@@ -468,8 +523,8 @@ export default function DashboardPage() {
             onNavigateToQuestion={handleSelectClaimCodeForReview}
             onShowToast={showToast}
             onConnectRepo={handleConnectGitHubRepo}
+            onRemoveSource={handleRemoveSource}
             onUploadPdf={handleUploadPdfPolicy}
-            onUploadXlsx={handleUploadQuestionnaire}
           />
         )}
 
@@ -478,6 +533,8 @@ export default function DashboardPage() {
           <FindingsAndChecksView
             conflicts={assessment.conflicts || []}
             claims={assessment.claims || []}
+            findings={assessment.findings || []}
+            checkResults={assessment.checkResults || []}
             onSelectClaimForReview={handleSelectClaimCodeForReview}
             onShowToast={showToast}
             onResolveFinding={handleResolveFinding}

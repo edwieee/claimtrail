@@ -17,7 +17,6 @@ export function SettingsModal({
   onShowToast,
   onSettingsSaved,
 }: SettingsModalProps) {
-  const [apiKey, setApiKey] = useState('');
   const [githubToken, setGithubToken] = useState('');
   const [activeModel, setActiveModel] = useState<'claude-3-7-sonnet' | 'gpt-4o' | 'deterministic'>('claude-3-7-sonnet');
   const [strictMode, setStrictMode] = useState(true);
@@ -32,7 +31,6 @@ export function SettingsModal({
         .then((res) => res.json())
         .then((data: AppSettings) => {
           if (data) {
-            setApiKey(data.openaiApiKey || '');
             setGithubToken(data.githubToken || '');
             setActiveModel(data.activeModel || 'claude-3-7-sonnet');
             setStrictMode(data.strictVerification ?? true);
@@ -50,7 +48,6 @@ export function SettingsModal({
     setIsSaving(true);
     try {
       const payload: Partial<AppSettings> = {
-        openaiApiKey: apiKey.trim(),
         githubToken: githubToken.trim(),
         activeModel,
         strictVerification: strictMode,
@@ -130,22 +127,9 @@ export function SettingsModal({
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium text-on-surface block mb-1 flex items-center justify-between">
-                    <span>OpenAI API Key (Optional)</span>
-                    <span className="text-[10px] text-secondary font-mono">Server-Side Encrypted</span>
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full text-xs font-mono bg-surface-container-low border border-surface-container-highest rounded px-2.5 py-1.5 text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
-                  />
-                  <p className="text-[11px] text-secondary mt-1">
-                    Leave blank to utilize ClaimTrail&apos;s built-in high-fidelity deterministic engine.
-                  </p>
-                </div>
+                <p className="text-[11px] text-secondary">
+                  AI drafting uses the server-only <code className="font-mono text-on-surface">OPENAI_API_KEY</code> environment variable. Configure it in the project&apos;s root <code className="font-mono text-on-surface">.env.local</code>; it is never entered or returned by the browser.
+                </p>
 
                 <div>
                   <label className="text-xs font-medium text-on-surface block mb-1 flex items-center justify-between">

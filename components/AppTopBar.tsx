@@ -106,7 +106,7 @@ export function AppTopBar({
 
         {/* Auditor Profile Avatar */}
         <div
-          className="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-label-sm text-xs font-semibold border border-surface-container-highest shrink-0 cursor-pointer"
+          className="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-label-sm text-xs font-semibold border border-surface-container-highest shrink-0"
           title="Lead Auditor: S. Chen"
         >
           SC

@@ -1,0 +1,11 @@
+authentication:
+  workforce_sso_supported: true
+  saml:
+    validate_issuer: true
+    validate_audience: true
+    validate_destination: true
+    validate_time_conditions: true
+    replay_protection: "not_integrated_in_demo_validator"
+  mfa:
+    administrative_access: "policy_required"
+    enforcement_evidence: "not_provided"

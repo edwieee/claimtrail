@@ -26,6 +26,7 @@ export function OverviewDashboard({
   onNewAssessment,
 }: OverviewDashboardProps) {
   const metrics = deriveMetrics(claims, conflicts);
+  const evidenceSourceCount = sources.filter((source) => source.type !== 'xlsx').length;
   return (
     <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-background">
       <div className="max-w-[1520px] mx-auto space-y-6">
@@ -44,7 +45,7 @@ export function OverviewDashboard({
 
           <div className="text-right text-label-sm font-label-sm text-secondary">
             <div className="font-semibold text-on-surface">{claims.length} claims in scope</div>
-            <div>{sources.length} evidence sources connected</div>
+            <div>{evidenceSourceCount} evidence sources connected</div>
           </div>
         </div>
 

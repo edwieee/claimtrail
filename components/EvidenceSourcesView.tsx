@@ -9,8 +9,8 @@ interface EvidenceSourcesViewProps {
   onNavigateToQuestion?: (claimCode: string) => void;
   onShowToast: (msg: string, type?: 'info' | 'success' | 'warning') => void;
   onConnectRepo?: (repoUrl: string) => Promise<void>;
+  onRemoveSource?: (sourceId: string, sourceName?: string) => Promise<void>;
   onUploadPdf?: (file: File) => Promise<void>;
-  onUploadXlsx?: (file: File) => Promise<void>;
 }
 
 export function EvidenceSourcesView({
@@ -18,10 +18,11 @@ export function EvidenceSourcesView({
   onNavigateToQuestion,
   onShowToast,
   onConnectRepo,
+  onRemoveSource,
   onUploadPdf,
-  onUploadXlsx,
 }: EvidenceSourcesViewProps) {
-  const [selectedSourceId, setSelectedSourceId] = useState<string>(sources[0]?.id || 'src-1');
+  const evidenceSources = useMemo(() => sources.filter((source) => source.type !== 'xlsx'), [sources]);
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(evidenceSources[0]?.id || 'src-1');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -31,13 +32,13 @@ export function EvidenceSourcesView({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // New source form state
-  const [newSourceType, setNewSourceType] = useState<'repo' | 'pdf' | 'xlsx'>('repo');
-  const [newRepoUrl, setNewRepoUrl] = useState('https://github.com/acme/core-api');
+  const [newSourceType, setNewSourceType] = useState<'repo' | 'pdf'>('repo');
+  const [newRepoUrl, setNewRepoUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const modalFileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSource = useMemo(
-    () => sources.find((s) => s.id === selectedSourceId) || sources[0] || {
+    () => evidenceSources.find((s) => s.id === selectedSourceId) || evidenceSources[0] || {
       id: 'default',
       name: 'No sources connected',
       type: 'pdf',
@@ -52,11 +53,11 @@ export function EvidenceSourcesView({
       linkedCount: 0,
       lastUpdated: 'Never',
     },
-    [sources, selectedSourceId]
+    [evidenceSources, selectedSourceId]
   );
 
   const filteredSources = useMemo(() => {
-    return sources.filter((s) => {
+    return evidenceSources.filter((s) => {
       if (typeFilter !== 'all' && s.type !== typeFilter) return false;
       if (statusFilter !== 'all' && s.status !== statusFilter) return false;
       if (searchQuery.trim()) {
@@ -69,7 +70,7 @@ export function EvidenceSourcesView({
       }
       return true;
     });
-  }, [sources, searchQuery, typeFilter, statusFilter]);
+  }, [evidenceSources, searchQuery, typeFilter, statusFilter]);
 
   const handleAddSource = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,15 +94,6 @@ export function EvidenceSourcesView({
         if (onUploadPdf) {
           await onUploadPdf(selectedFile);
         }
-      } else if (newSourceType === 'xlsx') {
-        if (!selectedFile) {
-          onShowToast('Please select an Excel (.xlsx) file to upload.', 'warning');
-          setIsSubmitting(false);
-          return;
-        }
-        if (onUploadXlsx) {
-          await onUploadXlsx(selectedFile);
-        }
       }
       setIsAddModalOpen(false);
       setSelectedFile(null);
@@ -113,8 +105,8 @@ export function EvidenceSourcesView({
     }
   };
 
-  const readyCount = sources.filter((s) => s.status === 'ready').length;
-  const attentionCount = sources.filter((s) => s.status === 'needs_attention').length;
+  const readyCount = evidenceSources.filter((s) => s.status === 'ready').length;
+  const attentionCount = evidenceSources.filter((s) => s.status === 'needs_attention').length;
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background">
@@ -166,16 +158,16 @@ export function EvidenceSourcesView({
             </div>
             <div className="mt-3 flex items-baseline justify-between">
               <div className="flex items-baseline gap-2">
-                <span className="text-headline-xl font-headline-xl font-bold text-on-surface">{sources.length}</span>
+                <span className="text-headline-xl font-headline-xl font-bold text-on-surface">{evidenceSources.length}</span>
                 <span className="text-label-sm font-label-sm text-secondary">connected</span>
               </div>
               <span className="text-code-sm font-code-sm text-secondary bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-high">
-                {sources.length > 0 ? '100% Target Met' : 'Pending Ingestion'}
+                {evidenceSources.length > 0 ? '100% Target Met' : 'Pending Ingestion'}
               </span>
             </div>
             <div className="mt-2 pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px] text-secondary">
               <span>All active evidence feeds</span>
-              <span className="font-code-sm">{sources.length} of {sources.length} Active</span>
+              <span className="font-code-sm">{evidenceSources.length} of {evidenceSources.length} Active</span>
             </div>
           </div>
 
@@ -255,7 +247,6 @@ export function EvidenceSourcesView({
                   className="h-8 pl-3 pr-7 text-label-md font-label-md bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface appearance-none focus:outline-none focus:border-on-surface cursor-pointer"
                 >
                   <option value="all">Type: All Types</option>
-                  <option value="xlsx">Excel Questionnaire (.xlsx)</option>
                   <option value="pdf">PDF Policy (.pdf)</option>
                   <option value="repo">GitHub Repository</option>
                 </select>
@@ -284,7 +275,7 @@ export function EvidenceSourcesView({
             {/* Table Actions */}
             <div className="flex items-center gap-2">
               <span className="text-label-sm font-label-sm text-secondary">
-                Showing {filteredSources.length} of {sources.length} records
+                Showing {filteredSources.length} of {evidenceSources.length} records
               </span>
             </div>
           </div>
@@ -559,27 +550,36 @@ export function EvidenceSourcesView({
                   selectedSource.extractedChunks.map((chunk, i) => (
                     <div
                       key={chunk.id || i}
-                      className="border border-surface-container-highest rounded p-3 bg-surface-container-lowest shadow-xs"
+                      className="border border-surface-container-highest rounded p-3 bg-surface-container-lowest shadow-xs space-y-2"
                     >
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-surface-container-highest">
-                        <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded bg-surface-container-low border border-surface-container-high text-[10px] font-code-sm font-semibold text-on-surface uppercase">
+                      <div className="flex items-center justify-between pb-2 border-b border-surface-container-highest">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded bg-surface-container-low border border-surface-container-high text-[10px] font-code-sm font-semibold text-on-surface uppercase truncate">
                             {chunk.pageOrFile}
                           </span>
                           <span className="text-label-sm font-label-sm text-secondary font-medium truncate max-w-[200px]">
                             {chunk.section}
                           </span>
                         </div>
-                        <span className="text-[10px] font-code-sm text-primary font-medium bg-primary-fixed/40 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-code-sm text-primary font-medium bg-primary-fixed/40 px-1.5 py-0.5 rounded shrink-0">
                           {chunk.confidence ? `${chunk.confidence}%` : 'Verified'}
                         </span>
                       </div>
-                      <p className="text-xs text-on-surface leading-relaxed whitespace-pre-line">
-                        {chunk.text}
-                      </p>
+
+                      {selectedSource.type === 'repo' ? (
+                        <pre className="text-[11px] font-mono leading-relaxed bg-surface-container-low/70 border border-surface-container-high/60 rounded p-2.5 overflow-x-auto text-on-surface whitespace-pre">
+                          <code>{chunk.text}</code>
+                        </pre>
+                      ) : (
+                        <p className="text-xs text-on-surface leading-relaxed whitespace-pre-line">
+                          {chunk.text}
+                        </p>
+                      )}
+
                       {chunk.linkedQuestionCode && (
-                        <div className="mt-2.5 pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px]">
-                          <span className="text-secondary font-code-sm">
+                        <div className="pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px]">
+                          <span className="text-secondary font-code-sm flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                             Supports {chunk.linkedQuestionCode}
                           </span>
                           <button
@@ -628,15 +628,133 @@ export function EvidenceSourcesView({
 
             {drawerTab === 'overview' && (
               <div className="space-y-3 text-xs text-secondary leading-relaxed">
-                <div className="p-3 bg-surface-container-low rounded border border-surface-container-high space-y-1.5">
-                  <div className="font-semibold text-on-surface">Source Specifications</div>
-                  <div>Format: {selectedSource.typeLabel}</div>
-                  <div>Size / Branch: {selectedSource.sizeOrBranch}</div>
-                  <div>Checksum (SHA-256): {selectedSource.sha}</div>
-                  <div>Status: {selectedSource.statusLabel}</div>
+                <div className="p-3 bg-surface-container-low rounded border border-surface-container-high space-y-2">
+                  <div className="font-semibold text-on-surface flex items-center justify-between">
+                    <span>Source Specifications</span>
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-surface-container rounded border border-surface-container-high">
+                      {selectedSource.type.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div>Format: <span className="text-on-surface font-medium">{selectedSource.typeLabel}</span></div>
+                  <div>Identifier: <span className="text-on-surface font-mono">{selectedSource.name}</span></div>
+                  <div>Size / Branch: <span className="text-on-surface">{selectedSource.sizeOrBranch}</span></div>
+                  <div>Revision / SHA: <span className="text-on-surface font-mono">{selectedSource.sha}</span></div>
+                  <div>Status: <span className="text-on-surface">{selectedSource.statusLabel}</span></div>
+
+                  {selectedSource.type === 'repo' && selectedSource.repoMetadata && (
+                    <div className="pt-2 border-t border-surface-container-high space-y-1.5 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span>Canonical URL:</span>
+                        <a
+                          href={selectedSource.repoMetadata.canonicalUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline font-mono inline-flex items-center gap-0.5"
+                        >
+                          <span>{selectedSource.repoMetadata.owner}/{selectedSource.repoMetadata.repo}</span>
+                          <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                        </a>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span>Commit SHA:</span>
+                        <a
+                          href={`${selectedSource.repoMetadata.canonicalUrl}/commit/${selectedSource.repoMetadata.commitSha}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline font-mono inline-flex items-center gap-0.5"
+                        >
+                          <span>{selectedSource.repoMetadata.commitSha.slice(0, 7)}</span>
+                          <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                        </a>
+                      </div>
+
+                      {selectedSource.repoMetadata.commitMessage && (
+                        <div>
+                          <span className="text-secondary">Message: </span>
+                          <span className="text-on-surface italic">"{selectedSource.repoMetadata.commitMessage}"</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <span>Tree Inspection:</span>
+                        <span className="text-on-surface font-mono">
+                          {selectedSource.repoMetadata.inspectedFilesCount} files indexed of {selectedSource.repoMetadata.totalFilesScanned} tree items
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p>
-                  ClaimTrail validates this source against internal SOC 2 Type II trust principles and ISO 27001 standards.
+
+                {/* Warnings Section if present */}
+                {selectedSource.repoMetadata?.warnings && selectedSource.repoMetadata.warnings.length > 0 && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-900 space-y-1">
+                    <div className="font-semibold flex items-center gap-1.5 text-amber-800">
+                      <span className="material-symbols-outlined text-[16px]">warning</span>
+                      <span>Inspection Scope Notice</span>
+                    </div>
+                    {selectedSource.repoMetadata.warnings.map((w, idx) => (
+                      <p key={idx} className="text-[11px] leading-relaxed">
+                        {w}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skipped Files Section if present */}
+                {selectedSource.repoMetadata?.skippedFiles && selectedSource.repoMetadata.skippedFiles.length > 0 && (
+                  <div className="p-3 bg-surface-container-low rounded border border-surface-container-high space-y-1.5 text-[11px]">
+                    <div className="font-semibold text-on-surface">Skipped Files ({selectedSource.repoMetadata.skippedFiles.length})</div>
+                    <div className="max-h-28 overflow-y-auto space-y-1 font-mono text-[10px]">
+                      {selectedSource.repoMetadata.skippedFiles.slice(0, 10).map((sf, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-secondary truncate">
+                          <span className="truncate max-w-[240px]">{sf.path}</span>
+                          <span className="text-amber-700 shrink-0">{sf.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Source Actions (Re-sync, Remove) */}
+                <div className="pt-3 border-t border-surface-container-highest flex items-center gap-2">
+                  {selectedSource.type === 'repo' && onConnectRepo && (
+                    <button
+                      onClick={async () => {
+                        const url = selectedSource.repoMetadata?.canonicalUrl || `https://${selectedSource.name}`;
+                        onShowToast(`Re-inspecting ${selectedSource.name}...`, 'info');
+                        try {
+                          await onConnectRepo(url);
+                        } catch (err: any) {
+                          onShowToast(err.message || 'Re-sync failed', 'warning');
+                        }
+                      }}
+                      className="flex-1 py-1.5 px-3 bg-surface-container-low hover:bg-surface-container-high text-on-surface text-xs font-medium rounded border border-surface-container-high flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">refresh</span>
+                      <span>Re-sync Source</span>
+                    </button>
+                  )}
+
+                  {onRemoveSource && (
+                    <button
+                      onClick={async () => {
+                        if (confirm(`Are you sure you want to disconnect '${selectedSource.name}'?`)) {
+                          await onRemoveSource(selectedSource.id, selectedSource.name);
+                        }
+                      }}
+                      className="py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded border border-red-200 flex items-center justify-center gap-1 transition-colors"
+                      title="Disconnect evidence source"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">delete</span>
+                      <span>Disconnect</span>
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-secondary">
+                  ClaimTrail validates this source against internal SOC 2 Type II trust principles and ISO 27001 standards. Code is inspected statically without executing repository scripts.
                 </p>
               </div>
             )}
@@ -666,7 +784,7 @@ export function EvidenceSourcesView({
             </div>
 
             <form onSubmit={handleAddSource} className="p-5 space-y-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setNewSourceType('repo')}
@@ -695,20 +813,6 @@ export function EvidenceSourcesView({
                   </span>
                   Policy PDF
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setNewSourceType('xlsx')}
-                  className={`p-2.5 rounded text-xs font-medium border text-center transition-colors ${
-                    newSourceType === 'xlsx'
-                      ? 'bg-surface-container-low border-primary-container text-on-surface font-semibold shadow-xs'
-                      : 'border-surface-container-highest text-secondary hover:bg-surface-container-low'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-base block mx-auto mb-1">
-                    table_chart
-                  </span>
-                  XLSX Workbook
-                </button>
               </div>
 
               {newSourceType === 'repo' ? (
@@ -721,7 +825,7 @@ export function EvidenceSourcesView({
                     value={newRepoUrl}
                     onChange={(e) => setNewRepoUrl(e.target.value)}
                     className="w-full h-8 px-3 text-xs bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface focus:outline-none focus:border-on-surface"
-                    placeholder="https://github.com/org/repo"
+                    placeholder="https://github.com/owner/repository"
                   />
                   <span className="text-[11px] text-secondary">
                     ClaimTrail will inspect default branch IaC manifests (.tf), configs, and security middleware without running repository code.
@@ -732,7 +836,7 @@ export function EvidenceSourcesView({
                   <input
                     type="file"
                     ref={modalFileInputRef}
-                    accept={newSourceType === 'pdf' ? '.pdf' : '.xlsx'}
+                    accept=".pdf"
                     onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                     className="hidden"
                   />
@@ -747,7 +851,7 @@ export function EvidenceSourcesView({
                       {selectedFile ? selectedFile.name : `Click to choose ${newSourceType.toUpperCase()} file`}
                     </div>
                     <div className="text-[11px] text-secondary">
-                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB selected` : `Supports .${newSourceType} documents`}
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB selected` : 'Supports .pdf documents'}
                     </div>
                   </div>
                 </div>
@@ -767,7 +871,11 @@ export function EvidenceSourcesView({
                   disabled={isSubmitting}
                   className="px-4 py-1.5 text-xs rounded bg-primary-container text-on-primary font-semibold hover:bg-[#ea580c] shadow-xs disabled:opacity-60"
                 >
-                  {isSubmitting ? 'Processing Source…' : 'Connect Source'}
+                  {isSubmitting
+                    ? newSourceType === 'repo'
+                      ? 'Inspecting Repo via Octokit…'
+                      : 'Processing Source…'
+                    : 'Connect Source'}
                 </button>
               </div>
             </form>

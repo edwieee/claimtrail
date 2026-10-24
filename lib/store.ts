@@ -268,3 +268,43 @@ export function getExportFilePath(filename: string): string | null {
   const targetPath = path.join(EXPORTS_DIR, safeName);
   return fs.existsSync(targetPath) ? targetPath : null;
 }
+
+const REPO_CACHE_DIR = path.join(DATA_DIR, 'repo-cache');
+
+export function saveRepoInspectionCache(key: string, data: any): void {
+  ensureDirectories();
+  if (!fs.existsSync(REPO_CACHE_DIR)) {
+    fs.mkdirSync(REPO_CACHE_DIR, { recursive: true });
+  }
+  const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const cachePath = path.join(REPO_CACHE_DIR, `${safeKey}.json`);
+  fs.writeFileSync(cachePath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+export function getRepoInspectionCache(key: string): any | null {
+  const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const cachePath = path.join(REPO_CACHE_DIR, `${safeKey}.json`);
+  if (fs.existsSync(cachePath)) {
+    try {
+      return JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export function sanitizeSettingsForClient(settings: AppSettings): AppSettings {
+  return {
+    ...settings,
+    githubToken: settings.githubToken ? '••••••••' : '',
+    openaiApiKey: settings.openaiApiKey ? '••••••••' : '',
+  };
+}
+
+export function sanitizeStateForClient(state: AssessmentState): AssessmentState {
+  return {
+    ...state,
+    settings: sanitizeSettingsForClient(state.settings),
+  };
+}

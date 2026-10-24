@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import type { SecurityClaim, EvidenceNode, EvidenceLibraryItem } from '@/types/claimtrail';
+import type { SecurityClaim, EvidenceNode, EvidenceLibraryItem, EvidenceMapping } from '@/types/claimtrail';
 
 interface QuestionReviewWorkspaceProps {
   claims: SecurityClaim[];
@@ -13,6 +13,10 @@ interface QuestionReviewWorkspaceProps {
   onShowToast: (msg: string, type?: 'info' | 'success' | 'warning') => void;
   onUpdateClaim?: (claimId: string, updates: { answerText?: string; reviewStatus?: 'draft' | 'needs_review' | 'approved' }) => Promise<void>;
   onSynthesizeAiDraft?: (claimId: string) => Promise<string | undefined>;
+  evidenceMapping?: EvidenceMapping;
+  isLoadingEvidence?: boolean;
+  onRefreshEvidence?: () => void;
+  onRunSecurityCheck?: () => void;
 }
 
 export function QuestionReviewWorkspace({
@@ -24,6 +28,10 @@ export function QuestionReviewWorkspace({
   onShowToast,
   onUpdateClaim,
   onSynthesizeAiDraft,
+  evidenceMapping,
+  isLoadingEvidence = false,
+  onRefreshEvidence,
+  onRunSecurityCheck,
 }: QuestionReviewWorkspaceProps) {
   const [isQuestionDrawerOpen, setIsQuestionDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -408,13 +416,55 @@ export function QuestionReviewWorkspace({
                   </div>
                 ) : (
                   <div className="font-body-md text-on-surface leading-relaxed space-y-4 text-[13px] whitespace-pre-line">
+                    {activeClaim.answerDraftDetails && (
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] font-code-sm">
+                        <span className={`px-1.5 py-0.5 rounded border uppercase ${
+                          activeClaim.answerDraftDetails.evidenceStatus === 'supported'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : activeClaim.answerDraftDetails.evidenceStatus === 'conflicting_evidence'
+                            ? 'bg-red-50 text-red-800 border-red-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}>
+                          {activeClaim.answerDraftDetails.evidenceStatus.replaceAll('_', ' ')}
+                        </span>
+                        <span className="text-secondary">AI draft from {activeClaim.answerDraftDetails.model}</span>
+                        <span className="text-amber-800">Human review required</span>
+                      </div>
+                    )}
                     <p>{currentAnswer}</p>
+                    {activeClaim.answerDraftDetails && (
+                      <div className="space-y-2 border-t border-surface-container-highest pt-3 text-[11px]">
+                        <p className="text-secondary"><span className="font-semibold text-on-surface">Evidence basis:</span> {activeClaim.answerDraftDetails.reasoningSummary}</p>
+                        {activeClaim.answerDraftDetails.evidenceCitations.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="font-semibold text-on-surface">Validated citations</span>
+                            {activeClaim.answerDraftDetails.evidenceCitations.map((citation) => (
+                              <div key={citation.evidenceId} className="rounded border border-surface-container-highest bg-surface-container-low/50 px-2.5 py-2">
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 font-code-sm text-secondary">
+                                  <span>{citation.sourceName}</span>
+                                  {citation.pageNumber !== undefined && <span>Page {citation.pageNumber}</span>}
+                                  {citation.filePath && <span>{citation.filePath}</span>}
+                                  {citation.lineRange && <span>Lines {citation.lineRange.start}-{citation.lineRange.end}</span>}
+                                  {citation.commitSha && <span>Commit {citation.commitSha.slice(0, 12)}</span>}
+                                </div>
+                                <p className="mt-1 text-on-surface whitespace-pre-line">{citation.excerpt}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {activeClaim.answerDraftDetails.limitations.length > 0 && (
+                          <div className="rounded border border-amber-200 bg-amber-50 px-2.5 py-2 text-amber-900">
+                            {activeClaim.answerDraftDetails.limitations.map((limitation) => <p key={limitation}>{limitation}</p>)}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </section>
 
-            {/* LOWER SECTION: DUAL-ENGINE VERIFIABLE EVIDENCE DECK (Side-by-Side 50/50 Grid) */}
+            {/* LOWER SECTION: RETRIEVED EVIDENCE MAPPING */}
             <div>
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
@@ -422,13 +472,85 @@ export function QuestionReviewWorkspace({
                     fact_check
                   </span>
                   <span className="text-label-md font-semibold text-on-surface text-[13px]">
-                    Dual-Engine Verifiable Evidence Deck
+                    Retrieved Evidence Mapping
                   </span>
-                  <span className="text-[11px] font-code-sm px-1.5 py-0.2 rounded bg-surface-container-low text-secondary border border-surface-container-high">
-                    {activeClaim.signalsCount?.supporting || 1} Verified Citations
+                  <span className={`text-[11px] font-code-sm px-1.5 py-0.2 rounded border ${
+                    evidenceMapping?.retrievalState === 'supporting'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : evidenceMapping?.retrievalState === 'conflicting'
+                      ? 'bg-red-50 text-red-800 border-red-200'
+                      : evidenceMapping?.retrievalState === 'mixed'
+                      ? 'bg-amber-50 text-amber-800 border-amber-200'
+                      : 'bg-surface-container-low text-secondary border-surface-container-high'
+                  }`}>
+                    {isLoadingEvidence ? 'Retrieving...' : evidenceMapping?.retrievalState || 'insufficient'}
                   </span>
                 </div>
-                <span className="text-[11px] text-secondary">Deterministic Baseline Snapshot</span>
+                <button
+                  onClick={onRefreshEvidence}
+                  disabled={isLoadingEvidence}
+                  className="text-[11px] text-primary hover:underline disabled:opacity-50"
+                >
+                  {isLoadingEvidence ? 'Searching sources...' : 'Refresh mapping'}
+                </button>
+                <button
+                  onClick={onRunSecurityCheck}
+                  className="text-[11px] text-primary hover:underline"
+                >
+                  Run security checks
+                </button>
+              </div>
+
+              <div className="mb-5 rounded-lg border border-surface-container-highest bg-surface-container-lowest shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-surface-container-highest bg-surface-container-low/40 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-label-md font-semibold text-on-surface text-[13px]">Question-to-source matches</h2>
+                    <p className="text-[11px] text-secondary mt-0.5">Lexical retrieval from ingested policy and repository content. Relevance is not proof.</p>
+                  </div>
+                  <span className="font-code-sm text-[11px] text-secondary shrink-0">{evidenceMapping?.evidence.length || 0} matches</span>
+                </div>
+                {evidenceMapping?.evidence.length ? (
+                  <div className="divide-y divide-surface-container-highest">
+                    {evidenceMapping.evidence.map((item) => (
+                      <article key={item.id} className="p-4 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`px-1.5 py-0.5 rounded border text-[10px] font-code-sm uppercase ${
+                              item.signal === 'supporting'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                : item.signal === 'potentially_conflicting'
+                                ? 'bg-red-50 text-red-800 border-red-200'
+                                : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }`}>
+                              {item.signal.replace('_', ' ')}
+                            </span>
+                            <span className="text-xs font-semibold text-on-surface truncate">{item.sourceName}</span>
+                          </div>
+                          <span className="font-code-sm text-[10px] text-secondary">Score {item.score}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-code-sm text-secondary">
+                          <span>{item.sourceType === 'pdf' ? `Page ${item.pageNumber ?? 'unknown'}` : item.filePath || 'Repository file unavailable'}</span>
+                          {item.lineRange && <span>Lines {item.lineRange.start}-{item.lineRange.end}</span>}
+                          {item.commitSha && <span>Commit {item.commitSha.slice(0, 12)}</span>}
+                        </div>
+                        <blockquote className="border-l-2 border-primary bg-surface-container-low/50 px-3 py-2 text-xs text-on-surface leading-relaxed whitespace-pre-wrap">
+                          {item.snippet}
+                        </blockquote>
+                        <p className="text-[11px] text-secondary">{item.explanation}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-5 text-sm text-secondary flex items-center justify-between gap-3">
+                    <span>No sufficiently relevant policy or repository evidence was found for this question.</span>
+                    <button onClick={onRefreshEvidence} disabled={isLoadingEvidence} className="shrink-0 text-primary hover:underline disabled:opacity-50">Retry</button>
+                  </div>
+                )}
+                {evidenceMapping?.limitations.length ? (
+                  <div className="px-4 py-3 border-t border-amber-200 bg-amber-50 text-[11px] text-amber-900 space-y-1">
+                    {evidenceMapping.limitations.map((limitation) => <p key={limitation}>{limitation}</p>)}
+                  </div>
+                ) : null}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">

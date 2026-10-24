@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useMemo, useRef } from 'react';
-import type { SecurityClaim, EvidenceStatus } from '@/types/claimtrail';
+import type { SecurityClaim, EvidenceMapping, EvidenceStatus } from '@/types/claimtrail';
 
 interface QuestionnaireViewProps {
   claims: SecurityClaim[];
+  evidenceMappings?: Record<string, EvidenceMapping>;
   targetFilename?: string;
   onSelectQuestionForReview: (claim: SecurityClaim) => void;
   onOpenReviewWorkspace: () => void;
@@ -14,6 +15,7 @@ interface QuestionnaireViewProps {
 
 export function QuestionnaireView({
   claims,
+  evidenceMappings = {},
   targetFilename = 'AcmeCorp-Security-Assessment-2026.xlsx',
   onSelectQuestionForReview,
   onOpenReviewWorkspace,
@@ -322,6 +324,10 @@ export function QuestionnaireView({
                         <span>Ref: {claim.linePageRef || 'SOC2-CC6.1'}</span>
                         <span>•</span>
                         <span>Source: {claim.primarySourcePath}</span>
+                        <span>•</span>
+                        <span className="text-primary">
+                          {evidenceMappings[claim.id]?.evidence.length || 0} evidence matches
+                        </span>
                         {claim.reviewStatus === 'approved' && (
                           <>
                             <span>•</span>

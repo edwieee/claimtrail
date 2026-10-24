@@ -1,0 +1,13 @@
+# Synthetic example; validate against the deployed product's approved retention policy.
+application_logs:
+  retention_days: 90
+  include_secrets: false
+security_audit_events:
+  retention_days: 365
+  access: restricted
+user_uploaded_documents:
+  retention_days: 30
+  delete_after_account_closure: true
+backup_data:
+  retention_days: 7
+  restore_test_frequency: "not_specified"

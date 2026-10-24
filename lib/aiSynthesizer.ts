@@ -60,37 +60,10 @@ Instructions:
           terminalSnippet: 'SET LOCAL app.current_tenant_id = ?',
         };
       }
-    } catch (err) {
-      console.warn('OpenAI API call failed, falling back to deterministic synthesizer:', err);
+    } catch {
+      throw new Error('OpenAI API request failed. No draft was generated.');
     }
   }
 
-  // High-fidelity deterministic synthesizer grounded in evidence
-  let synthesizedAnswer = '';
-  let terminalSnippet = 'SET LOCAL app.current_tenant_id = ?';
-
-  const qLower = claim.question.toLowerCase();
-  if (qLower.includes('tenant') || qLower.includes('isolat') || claim.code.includes('104')) {
-    synthesizedAnswer =
-      'Customer data isolation is enforced at the database layer using PostgreSQL Row-Level Security (RLS). Every incoming authenticated request resolves the tenant context via session metadata, injecting app.current_tenant_id into the transaction context before query execution.\n\nIn addition, object storage buckets (S3) segregate assets using prefix hierarchy enforced via IAM dynamic session policies (s3://acme-prod-data/${tenant_id}/*). Tenant encryption keys are independently provisioned and managed within AWS KMS with dedicated customer-managed key (CMK) aliases, ensuring cryptographic separation of data at rest.';
-    terminalSnippet = 'SET LOCAL app.current_tenant_id = ?';
-  } else if (qLower.includes('key') || qLower.includes('kms') || qLower.includes('rotat')) {
-    synthesizedAnswer =
-      'All production data stores enforce KMS envelope encryption using symmetric Customer Managed Keys (CMKs). Keys are provisioned via Terraform modules and subject to automated annual key rotation policies audited through AWS CloudTrail telemetry.';
-    terminalSnippet = 'aws_kms_key.app_storage (enable_key_rotation = true)';
-  } else if (qLower.includes('mfa') || qLower.includes('auth')) {
-    synthesizedAnswer =
-      'Multi-factor authentication (MFA) is strictly mandated across all production consoles, bastion access, and administrative CLI sessions. Enforcement is codified via IAM conditional policies requiring aws:MultiFactorAuthPresent for STS token generation.';
-    terminalSnippet = 'Condition: {"Bool": {"aws:MultiFactorAuthPresent": "true"}}';
-  } else {
-    synthesizedAnswer = `${claim.question} — Technical enforcement is codified according to internal InfoSec Policy standards, mapped to verifiable repository configuration manifests and deterministic CI/CD verification checks.`;
-  }
-
-  return {
-    answer: synthesizedAnswer,
-    model: 'Claude 3.7 Sonnet',
-    sourcesCount: 2,
-    confidence: 94.2,
-    terminalSnippet,
-  };
+  throw new Error('OpenAI API key is required for answer drafting.');
 }

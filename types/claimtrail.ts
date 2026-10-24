@@ -49,6 +49,7 @@ export interface SecurityClaim {
   reviewStatus?: 'draft' | 'approved' | 'needs_review';
   answerDraft?: string;
   answerConfidence?: number;
+  answerDraftDetails?: AnswerDraft;
   // Location in original spreadsheet
   sheetName?: string;
   rowNumber?: number;
@@ -80,6 +81,38 @@ export interface SecurityClaim {
     matchConfidence: number;
     description: string;
   };
+}
+
+export type AnswerDraftEvidenceStatus =
+  | 'supported'
+  | 'partially_supported'
+  | 'conflicting_evidence'
+  | 'insufficient_evidence';
+
+export interface AnswerDraftCitation {
+  evidenceId: string;
+  sourceType: 'pdf' | 'repo';
+  sourceName: string;
+  sourceUrlOrFilename: string;
+  excerpt: string;
+  pageNumber?: number;
+  filePath?: string;
+  lineRange?: { start: number; end: number };
+  commitSha?: string;
+  branch?: string;
+}
+
+export interface AnswerDraft {
+  questionId: string;
+  draftAnswer: string;
+  evidenceStatus: AnswerDraftEvidenceStatus;
+  reviewRequired: boolean;
+  reasoningSummary: string;
+  limitations: string[];
+  evidenceCitations: AnswerDraftCitation[];
+  generatedAt: string;
+  model: string;
+  evidenceVersion: string;
 }
 
 export interface ConflictItem {
@@ -117,6 +150,141 @@ export interface EvidenceLibraryItem {
   status: EvidenceStatus;
 }
 
+export type EvidenceRetrievalState = 'supporting' | 'conflicting' | 'insufficient' | 'mixed';
+
+export interface EvidenceMatch {
+  id: string;
+  sourceId: string;
+  sourceType: 'pdf' | 'repo';
+  sourceName: string;
+  sourceUrlOrFilename: string;
+  repository?: string;
+  filePath?: string;
+  commitSha?: string;
+  branch?: string;
+  pageNumber?: number;
+  lineRange?: { start: number; end: number };
+  section?: string;
+  snippet: string;
+  score: number;
+  explanation: string;
+  signal: 'supporting' | 'potentially_conflicting' | 'ambiguous';
+  limitations: string[];
+}
+
+export interface EvidenceMapping {
+  claimId: string;
+  claimCode: string;
+  question: string;
+  retrievalState: EvidenceRetrievalState;
+  evidence: EvidenceMatch[];
+  limitations: string[];
+  retrievedAt: string;
+}
+
+export type DeterministicCheckStatus =
+  | 'pass'
+  | 'finding'
+  | 'needs_review'
+  | 'insufficient_evidence'
+  | 'not_applicable';
+
+export type DeterministicFindingType =
+  | 'policy_config_conflict'
+  | 'implementation_gap'
+  | 'missing_evidence'
+  | 'control_evidence'
+  | 'unsupported_answer';
+
+export type ConflictAnalysisType =
+  | 'explicit_conflict'
+  | 'possible_implementation_gap'
+  | 'unsupported_answer'
+  | 'missing_evidence'
+  | 'consistent_evidence'
+  | 'needs_human_verification';
+
+export type FindingReviewStatus =
+  | 'open'
+  | 'in_review'
+  | 'awaiting_evidence'
+  | 'resolved'
+  | 'accepted_risk'
+  | 'false_positive';
+
+export interface RuleEvidenceReference {
+  evidenceId: string;
+  sourceType: 'pdf' | 'repo';
+  sourceName: string;
+  sourceUrlOrFilename: string;
+  excerpt: string;
+  pageNumber?: number;
+  filePath?: string;
+  lineRange?: { start: number; end: number };
+  commitSha?: string;
+  branch?: string;
+}
+
+export interface DeterministicFinding {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  relatedClaimIds: string[];
+  relatedQuestionCodes: string[];
+  category: string;
+  status: Exclude<DeterministicCheckStatus, 'pass' | 'not_applicable'>;
+  reviewStatus?: FindingReviewStatus;
+  analysisType?: ConflictAnalysisType;
+  findingType: DeterministicFindingType;
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  explanation: string;
+  trigger: string;
+  recommendedAction: string;
+  evidence: RuleEvidenceReference[];
+  checkedAt: string;
+  firstDetectedAt?: string;
+  lastUpdatedAt?: string;
+  stale?: boolean;
+  sourceVersion?: string;
+  relatedDraftVersion?: string;
+  relatedStep4FindingIds?: string[];
+  whatEvidenceProves?: string;
+  whatEvidenceDoesNotProve?: string;
+  reviewNotes?: string;
+  resolution?: {
+    status: Exclude<FindingReviewStatus, 'open' | 'in_review' | 'awaiting_evidence'>;
+    reason: string;
+    resolvedAt: string;
+  };
+}
+
+export interface ConflictAnalysisResult {
+  id: string;
+  claimId: string;
+  claimCode: string;
+  analysisType: ConflictAnalysisType;
+  status: 'pass' | 'review' | 'missing';
+  explanation: string;
+  evidenceIds: string[];
+  findingId?: string;
+  sourceVersion: string;
+  analyzedAt: string;
+}
+
+export interface SecurityCheckResult {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  claimId: string;
+  claimCode: string;
+  category: string;
+  status: DeterministicCheckStatus;
+  findingId?: string;
+  explanation: string;
+  checkedAt: string;
+}
+
 export interface EvidenceSourceFile {
   id: string;
   name: string;
@@ -139,7 +307,20 @@ export interface EvidenceSourceFile {
     text: string;
     confidence: number;
     linkedQuestionCode?: string;
+    lineRange?: { start: number; end: number };
   }[];
+  repoMetadata?: {
+    owner: string;
+    repo: string;
+    canonicalUrl: string;
+    branch: string;
+    commitSha: string;
+    commitMessage?: string;
+    inspectedFilesCount: number;
+    totalFilesScanned: number;
+    warnings?: string[];
+    skippedFiles?: { path: string; reason: string }[];
+  };
 }
 
 export interface SecurityCheckCategory {
@@ -189,6 +370,9 @@ export interface AssessmentState {
   sources: EvidenceSourceFile[];
   exportHistory: ExportDeliverable[];
   settings: AppSettings;
+  checkResults?: SecurityCheckResult[];
+  findings?: DeterministicFinding[];
+  conflictAnalyses?: ConflictAnalysisResult[];
 }
 
 export interface LayerVisibility {

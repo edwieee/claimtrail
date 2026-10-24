@@ -1,0 +1,19 @@
+{
+  "repository": "AcmeCloud synthetic ClaimTrail demo",
+  "purpose": "Evidence ingestion and policy/config mismatch demonstration",
+  "intentional_findings": [
+    {
+      "topic": "encryption at rest",
+      "policy": "policies/security-policy.md",
+      "implementation": "infra/terraform/database.tf",
+      "line": 6,
+      "expected": "Potential policy/configuration conflict; verify deployed state"
+    },
+    {
+      "topic": "SAML replay protection",
+      "policy": "policies/security-policy.md",
+      "implementation": "src/auth/saml/assertion-validator.ts",
+      "expected": "Needs Review because replay protection is not integrated into validation"
+    }
+  ]
+}

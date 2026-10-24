@@ -1,14 +1,23 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { ConflictItem, SecurityClaim } from '@/types/claimtrail';
+import type {
+  ConflictItem,
+  DeterministicFinding,
+  FindingReviewStatus,
+  RuleEvidenceReference,
+  SecurityCheckResult,
+  SecurityClaim,
+} from '@/types/claimtrail';
 
 interface FindingsAndChecksViewProps {
   conflicts: ConflictItem[];
   claims: SecurityClaim[];
+  findings?: DeterministicFinding[];
+  checkResults?: SecurityCheckResult[];
   onSelectClaimForReview?: (claimCode: string) => void;
   onShowToast: (msg: string, type?: 'info' | 'success' | 'warning') => void;
-  onResolveFinding?: (findingId: string, status: 'open' | 'reviewed' | 'resolved') => Promise<void>;
+  onResolveFinding?: (findingId: string, status: FindingReviewStatus, notes?: string) => Promise<void>;
   onRunEvidenceCheck?: () => void;
 }
 
@@ -37,12 +46,20 @@ interface DisplayFinding {
     lines: { num: number; text: string; isHighlighted?: boolean }[];
   };
   relationshipAnalysis: string;
-  status: 'open' | 'reviewed' | 'resolved';
+  status: FindingReviewStatus;
+  evidenceReferences?: RuleEvidenceReference[];
+  ruleStatus?: string;
+  whatEvidenceProves?: string;
+  whatEvidenceDoesNotProve?: string;
+  draftAnswer?: string;
+  stale?: boolean;
 }
 
 export function FindingsAndChecksView({
   conflicts = [],
   claims = [],
+  findings = [],
+  checkResults = [],
   onSelectClaimForReview,
   onShowToast,
   onResolveFinding,
@@ -51,6 +68,45 @@ export function FindingsAndChecksView({
   // Transform conflicts and unverified claims into unified display findings
   const findingsList: DisplayFinding[] = useMemo(() => {
     const list: DisplayFinding[] = [];
+
+    findings.forEach((finding, idx) => {
+      const policyEvidence = finding.evidence.find((item) => item.sourceType === 'pdf');
+      const repoEvidence = finding.evidence.find((item) => item.sourceType === 'repo');
+      const relatedClaim = claims.find((claim) => finding.relatedClaimIds.includes(claim.id));
+      list.push({
+        id: finding.id,
+        code: `D-${String(idx + 1).padStart(3, '0')}`,
+        title: finding.title,
+        type: finding.findingType === 'policy_config_conflict' ? 'conflict' : finding.findingType === 'missing_evidence' ? 'missing' : 'check',
+        typeLabel: finding.findingType.replaceAll('_', ' '),
+        severity: finding.priority,
+        severityLabel: finding.priority === 'high' ? 'High Priority' : finding.priority === 'medium' ? 'Needs Review' : 'Low Priority',
+        relatedQuestionCode: finding.relatedQuestionCodes[0] || relatedClaim?.code || 'Unlinked',
+        relatedControl: finding.category,
+        questionText: relatedClaim?.question || 'Question unavailable',
+        sourceSummary: `${finding.evidence.length} evidence reference${finding.evidence.length === 1 ? '' : 's'}`,
+        flagReason: finding.trigger,
+        policyCitation: {
+          docName: policyEvidence?.sourceName || 'No policy evidence retrieved',
+          section: policyEvidence?.pageNumber ? `Page ${policyEvidence.pageNumber}` : 'Location unavailable',
+          quote: policyEvidence?.excerpt || 'No policy excerpt available.',
+          status: finding.status,
+        },
+        codeEvidence: {
+          file: repoEvidence?.filePath || repoEvidence?.sourceName || 'No repository evidence retrieved',
+          line: repoEvidence?.lineRange?.start || 0,
+          lines: repoEvidence ? [{ num: repoEvidence.lineRange?.start || 0, text: repoEvidence.excerpt, isHighlighted: true }] : [],
+        },
+        relationshipAnalysis: finding.explanation,
+        status: finding.reviewStatus || 'open',
+        evidenceReferences: finding.evidence,
+        ruleStatus: finding.status,
+        whatEvidenceProves: finding.whatEvidenceProves,
+        whatEvidenceDoesNotProve: finding.whatEvidenceDoesNotProve,
+        draftAnswer: relatedClaim?.answerDraftDetails?.draftAnswer,
+        stale: finding.stale,
+      });
+    });
 
     // From explicit conflicts
     conflicts.forEach((c, idx) => {
@@ -76,88 +132,40 @@ export function FindingsAndChecksView({
         },
         codeEvidence: {
           file: c.sourceB.ref,
-          line: 44,
-          lines: [
-            { num: 42, text: '// Inspected repository source' },
-            { num: 43, text: `// Target: ${c.sourceB.label}` },
-            { num: 44, text: c.sourceB.statement, isHighlighted: true },
-          ],
+          line: 0,
+          lines: [],
         },
         relationshipAnalysis: `Discrepancy identified between policy specification and actual runtime code behavior. Requires manual engineering confirmation.`,
         status: (c.status as any) || 'open',
       });
     });
 
-    // Also include claims flagged with status 'red'
-    claims
-      .filter((cl) => cl.status === 'red' && !conflicts.some((c) => c.claimCode === cl.code))
-      .forEach((cl, idx) => {
-        list.push({
-          id: `f-claim-${cl.id}`,
-          code: `F-${250 + idx}`,
-          title: `Unverified Claim: ${cl.code} (${cl.category})`,
-          type: 'conflict',
-          typeLabel: 'Discrepancy',
-          severity: 'high',
-          severityLabel: 'High Priority',
-          relatedQuestionCode: cl.code,
-          relatedControl: cl.category,
-          questionText: cl.question,
-          sourceSummary: cl.primarySourcePath,
-          flagReason: cl.statusDetail || 'Claimed control has not been verified in inspected repository AST.',
-          policyCitation: {
-            docName: cl.policyCitation?.docName || 'InfoSec Policy v4.2',
-            section: cl.policyCitation?.section || 'Security Controls',
-            quote: cl.policyCitation?.quote || 'Policy mandates formal verification.',
-            status: 'Under Review',
-          },
-          codeEvidence: {
-            file: cl.primarySourcePath,
-            line: 1,
-            lines: cl.codeCitation?.lines || [
-              { num: 1, text: '// Inspected scope' },
-              { num: 2, text: '// Discrepancy flagged by deterministic check', isHighlighted: true },
-            ],
-          },
-          relationshipAnalysis: cl.limitations || 'Implementation requires developer review.',
-          status: 'open',
-        });
-      });
-
     return list;
-  }, [conflicts, claims]);
+  }, [conflicts, claims, findings]);
 
   const [selectedFindingId, setSelectedFindingId] = useState<string>(findingsList[0]?.id || 'f-201');
   const [typeFilter, setTypeFilter] = useState<'all' | 'conflict' | 'missing' | 'check'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [reviewNotes, setReviewNotes] = useState('');
 
   const selectedFinding = useMemo(
-    () => findingsList.find((f) => f.id === selectedFindingId) || findingsList[0] || {
-      id: 'default',
-      code: 'F-201',
-      title: 'Tenant Isolation Parameter Scope vs Policy Rule',
-      type: 'conflict',
-      typeLabel: 'Policy Conflict',
-      severity: 'high',
-      severityLabel: 'High Priority',
-      relatedQuestionCode: 'SEC-104',
-      relatedControl: 'SOC2 CC6.1',
-      questionText: 'How is customer data separated and isolated across multi-tenant storage layers?',
-      sourceSummary: '2 sources',
-      flagReason: 'Discrepancy between policy and implementation.',
-      policyCitation: {
-        docName: 'Acme_InfoSec_Policy_v4.2.pdf',
-        section: 'Section 3.2',
-        quote: 'All multi-tenant data stores must enforce logical segregation.',
-        status: 'Approved',
-      },
-      codeEvidence: {
-        file: 'tenant_middleware.go:44',
-        line: 44,
-        lines: [{ num: 44, text: 'db.Exec("SET LOCAL app.current_tenant_id = ?", tID)', isHighlighted: true }],
-      },
-      relationshipAnalysis: 'Policy mandates session level, code injects per HTTP request.',
+      () => findingsList.find((f) => f.id === selectedFindingId) || findingsList[0] || {
+      id: 'empty',
+      code: '--',
+      title: 'No finding selected',
+      type: 'check',
+      typeLabel: 'No result',
+      severity: 'low',
+      severityLabel: 'No result',
+      relatedQuestionCode: '--',
+      relatedControl: '--',
+      questionText: 'Run a deterministic security check to inspect evidence-backed results.',
+      sourceSummary: 'No evidence references',
+      flagReason: 'No deterministic finding is currently selected.',
+      policyCitation: { docName: 'Unavailable', section: 'Unavailable', quote: 'No policy evidence.', status: 'Not evaluated' },
+      codeEvidence: { file: 'Unavailable', line: 0, lines: [] },
+      relationshipAnalysis: 'No result is available until a check is run.',
       status: 'open',
     },
     [findingsList, selectedFindingId]
@@ -180,9 +188,13 @@ export function FindingsAndChecksView({
   }, [findingsList, typeFilter, statusFilter, searchQuery]);
 
   const handleMarkResolved = async (id: string) => {
+    if (!reviewNotes.trim()) {
+      onShowToast('Add a resolution reason before closing this finding.', 'warning');
+      return;
+    }
     try {
       if (onResolveFinding) {
-        await onResolveFinding(id, 'resolved');
+        await onResolveFinding(id, 'resolved', reviewNotes.trim());
       }
       onShowToast(`Finding ${selectedFinding.code} marked as Resolved`, 'success');
     } catch (err: any) {
@@ -193,18 +205,21 @@ export function FindingsAndChecksView({
   const handleMarkReviewed = async (id: string) => {
     try {
       if (onResolveFinding) {
-        await onResolveFinding(id, 'reviewed');
+        await onResolveFinding(id, 'in_review', reviewNotes.trim() || undefined);
       }
-      onShowToast(`Finding ${selectedFinding.code} marked as Reviewed`, 'info');
+      onShowToast(`Finding ${selectedFinding.code} moved to In Review`, 'info');
     } catch (err: any) {
       onShowToast(err.message || 'Failed to review finding', 'warning');
     }
   };
 
-  const openCount = findingsList.filter((f) => f.status === 'open').length;
-  const conflictCount = findingsList.filter((f) => f.type === 'conflict').length;
-  const missingCount = findingsList.filter((f) => f.type === 'missing').length;
-  const reviewedCount = findingsList.filter((f) => f.status === 'reviewed' || f.status === 'resolved').length;
+  const activeFindings = findingsList.filter((f) => !['resolved', 'accepted_risk', 'false_positive'].includes(f.status));
+  const openCount = activeFindings.length;
+  const conflictCount = activeFindings.filter((f) => f.type === 'conflict').length;
+  const missingCount = activeFindings.filter((f) => f.type === 'missing').length;
+  const reviewedCount = findingsList.filter((f) => ['resolved', 'accepted_risk', 'false_positive'].includes(f.status)).length;
+  const passedCount = checkResults.filter((check) => check.status === 'pass').length;
+  const insufficientCount = checkResults.filter((check) => check.status === 'insufficient_evidence').length;
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5 bg-background custom-scrollbar">
@@ -221,6 +236,9 @@ export function FindingsAndChecksView({
           </div>
           <p className="text-body-md font-body-md text-secondary mt-0.5">
             Review evidence gaps, security-check results, and policy conflicts across imported security questionnaire responses.
+          </p>
+          <p className="text-[11px] font-code-sm text-secondary mt-1">
+            Checks run: {checkResults.length} · Passed: {passedCount} · Insufficient evidence: {insufficientCount}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -252,9 +270,6 @@ export function FindingsAndChecksView({
               Active review required
             </span>
           </div>
-          <div className="w-full bg-surface-container-highest h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-primary-container h-full w-3/5" />
-          </div>
         </div>
 
         {/* Tile 2: Policy-Implementation Conflicts */}
@@ -268,9 +283,6 @@ export function FindingsAndChecksView({
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{conflictCount}</span>
             <span className="text-label-sm font-label-sm text-amber-700">Discrepancy detected</span>
-          </div>
-          <div className="w-full bg-surface-container-highest h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-amber-600 h-full w-1/4" />
           </div>
         </div>
 
@@ -288,9 +300,6 @@ export function FindingsAndChecksView({
               Repository reference absent
             </span>
           </div>
-          <div className="w-full bg-surface-container-highest h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-secondary h-full w-1/4" />
-          </div>
         </div>
 
         {/* Tile 4: Reviewed Findings */}
@@ -304,9 +313,6 @@ export function FindingsAndChecksView({
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{reviewedCount}</span>
             <span className="text-label-sm font-label-sm text-emerald-700">Audited &amp; signed</span>
-          </div>
-          <div className="w-full bg-surface-container-highest h-1 rounded-full mt-3 overflow-hidden">
-            <div className="bg-emerald-600 h-full w-full" />
           </div>
         </div>
       </div>
@@ -346,6 +352,16 @@ export function FindingsAndChecksView({
             >
               Missing Evidence ({missingCount})
             </button>
+            <button
+              onClick={() => setTypeFilter('check')}
+              className={`px-2.5 py-1 rounded transition-colors ${
+                typeFilter === 'check'
+                  ? 'bg-surface-container-lowest text-on-surface shadow-xs font-semibold border border-surface-container-highest'
+                  : 'text-secondary hover:text-on-surface'
+              }`}
+            >
+              Rule Checks ({findingsList.filter((finding) => finding.type === 'check').length})
+            </button>
           </div>
 
           <div className="h-4 w-px bg-surface-container-highest mx-1" />
@@ -360,8 +376,11 @@ export function FindingsAndChecksView({
             >
               <option value="all">All Statuses</option>
               <option value="open">Open</option>
-              <option value="reviewed">Reviewed</option>
+              <option value="in_review">In Review</option>
+              <option value="awaiting_evidence">Awaiting Evidence</option>
               <option value="resolved">Resolved</option>
+              <option value="accepted_risk">Accepted Risk</option>
+              <option value="false_positive">False Positive</option>
             </select>
           </div>
         </div>
@@ -422,14 +441,16 @@ export function FindingsAndChecksView({
                       </span>
                       <span
                         className={`px-1.5 py-0.5 rounded text-[10px] font-label-sm uppercase tracking-wide border ${
-                          finding.status === 'resolved'
+                          finding.stale
+                            ? 'bg-slate-100 text-slate-700 border-slate-300'
+                            : ['resolved', 'accepted_risk', 'false_positive'].includes(finding.status)
                             ? 'bg-[#f0fdf4] text-[#15803d] border-[#bbf7d0]'
                             : finding.severity === 'high'
                             ? 'bg-[#fef2f2] text-[#b91c1c] border-[#fecaca]'
                             : 'bg-amber-50 text-amber-800 border-amber-200'
                         }`}
                       >
-                        {finding.status === 'resolved' ? 'Resolved' : finding.severityLabel}
+                        {finding.stale ? 'Stale - Re-review' : finding.status === 'accepted_risk' ? 'Accepted Risk' : finding.status === 'false_positive' ? 'False Positive' : finding.status === 'resolved' ? 'Resolved' : finding.status === 'in_review' ? 'In Review' : finding.status === 'awaiting_evidence' ? 'Awaiting Evidence' : finding.severityLabel}
                       </span>
                     </div>
 
@@ -491,13 +512,15 @@ export function FindingsAndChecksView({
               </h2>
             </div>
 
-            <button
-              onClick={() => onSelectClaimForReview?.(selectedFinding.relatedQuestionCode)}
-              className="h-8 px-2.5 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest text-label-sm font-label-sm flex items-center gap-1 shrink-0"
-            >
-              <span className="material-symbols-outlined text-[15px]">open_in_new</span>
-              <span>Open Related Question ({selectedFinding.relatedQuestionCode})</span>
-            </button>
+            {selectedFinding.relatedQuestionCode !== '--' && (
+              <button
+                onClick={() => onSelectClaimForReview?.(selectedFinding.relatedQuestionCode)}
+                className="h-8 px-2.5 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest text-label-sm font-label-sm flex items-center gap-1 shrink-0"
+              >
+                <span className="material-symbols-outlined text-[15px]">open_in_new</span>
+                <span>Open Related Question ({selectedFinding.relatedQuestionCode})</span>
+              </button>
+            )}
           </div>
 
           {/* Inspector Body Content */}
@@ -536,6 +559,39 @@ export function FindingsAndChecksView({
                 </p>
               </div>
             </div>
+
+            {selectedFinding.evidenceReferences && selectedFinding.evidenceReferences.length > 0 && (
+              <div className="rounded-lg border border-surface-container-highest bg-surface-container-lowest overflow-hidden">
+                <div className="px-3.5 py-2.5 border-b border-surface-container-highest bg-surface-container-low/40 flex items-center justify-between">
+                  <h4 className="text-label-md font-label-md font-semibold text-on-surface uppercase tracking-wider text-xs">
+                    Rule Evidence References
+                  </h4>
+                  <span className="text-[11px] font-code-sm text-secondary">{selectedFinding.ruleStatus || 'review required'}</span>
+                </div>
+                <div className="divide-y divide-surface-container-highest">
+                  {selectedFinding.evidenceReferences.map((evidence) => (
+                    <div key={evidence.evidenceId} className="p-3 space-y-1.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-on-surface">{evidence.sourceName}</span>
+                        <span className="text-[10px] font-code-sm text-secondary">{evidence.sourceType.toUpperCase()}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10.5px] font-code-sm text-secondary">
+                        {evidence.pageNumber !== undefined && <span>Page {evidence.pageNumber}</span>}
+                        {evidence.filePath && <span>{evidence.filePath}</span>}
+                        {evidence.lineRange && <span>Lines {evidence.lineRange.start}-{evidence.lineRange.end}</span>}
+                        {evidence.commitSha && <span>Commit {evidence.commitSha.slice(0, 12)}</span>}
+                      </div>
+                      <p className="border-l-2 border-primary bg-surface-container-low/50 px-2.5 py-2 text-xs text-on-surface whitespace-pre-wrap leading-relaxed">
+                        {evidence.excerpt}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="px-3.5 py-2.5 border-t border-amber-200 bg-amber-50 text-[11px] text-amber-900">
+                  This result evaluates only the retrieved evidence. It does not prove deployment state, execution, or complete control coverage.
+                </p>
+              </div>
+            )}
 
             {/* Side-by-side Evidence Comparison */}
             <div className="flex flex-col gap-2">
@@ -619,27 +675,47 @@ export function FindingsAndChecksView({
                 {selectedFinding.relationshipAnalysis}
               </p>
             </div>
+
+            {(selectedFinding.whatEvidenceProves || selectedFinding.whatEvidenceDoesNotProve || selectedFinding.draftAnswer) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedFinding.whatEvidenceProves && (
+                  <div className="p-3.5 rounded-lg border border-emerald-200 bg-emerald-50 text-xs text-emerald-950">
+                    <span className="font-semibold block mb-1">What the evidence establishes</span>
+                    <p>{selectedFinding.whatEvidenceProves}</p>
+                  </div>
+                )}
+                {selectedFinding.whatEvidenceDoesNotProve && (
+                  <div className="p-3.5 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-950">
+                    <span className="font-semibold block mb-1">What remains unknown</span>
+                    <p>{selectedFinding.whatEvidenceDoesNotProve}</p>
+                  </div>
+                )}
+                {selectedFinding.draftAnswer && (
+                  <div className="p-3.5 rounded-lg border border-surface-container-highest bg-surface-container-lowest text-xs text-on-surface md:col-span-2">
+                    <span className="font-semibold block mb-1">Related questionnaire draft</span>
+                    <p className="whitespace-pre-line">{selectedFinding.draftAnswer}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Inspector Action Footer */}
           <div className="px-5 py-3.5 bg-surface-container-lowest border-t border-surface-container-highest flex flex-wrap items-center justify-between gap-3 mt-auto">
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => onSelectClaimForReview?.(selectedFinding.relatedQuestionCode)}
-                className="h-8 px-3 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest font-label-md text-label-md flex items-center gap-1.5 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[15px] text-secondary">visibility</span>
-                <span>Review Question</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
+              <input
+                value={reviewNotes}
+                onChange={(event) => setReviewNotes(event.target.value)}
+                placeholder="Reviewer note or resolution reason"
+                aria-label="Reviewer note or resolution reason"
+                className="h-8 w-56 px-2.5 text-xs border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+              />
               <button
                 onClick={() => handleMarkReviewed(selectedFinding.id)}
                 className="h-8 px-3 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest font-label-md text-label-md flex items-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-[15px] text-emerald-600">done</span>
-                <span>Mark Reviewed</span>
+                <span>Start Review</span>
               </button>
               <button
                 onClick={() => handleMarkResolved(selectedFinding.id)}

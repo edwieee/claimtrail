@@ -82,10 +82,14 @@ async function testPipeline() {
   console.log(`[PASS] Conflicts Detected: ${evalResult.conflicts.length} exceptions flagged.`);
 
   // 4. Test AI / Grounded Synthesis
-  console.log('Testing Grounded AI Synthesizer...');
-  const synthesis = await synthesizeGroundedAnswer(evalResult.updatedClaims[0]);
-  console.log(`[PASS] Synthesized answer preview: "${synthesis.answer.slice(0, 80)}..."`);
-  console.log(`[PASS] Model: ${synthesis.model}, Confidence: ${synthesis.confidence}%`);
+  if (process.env.OPENAI_API_KEY) {
+    console.log('Testing Grounded AI Synthesizer...');
+    const synthesis = await synthesizeGroundedAnswer(evalResult.updatedClaims[0]);
+    console.log(`[PASS] Synthesized answer preview: "${synthesis.answer.slice(0, 80)}..."`);
+    console.log(`[PASS] Model: ${synthesis.model}, Confidence: ${synthesis.confidence}%`);
+  } else {
+    console.log('[SKIP] Grounded AI Synthesizer requires OPENAI_API_KEY; no provider call was attempted.');
+  }
 
   // 5. Test Export XLSX Generation
   console.log('Testing Real XLSX Export Generation...');

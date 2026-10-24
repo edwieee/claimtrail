@@ -4,7 +4,7 @@
   "framework": "SIG Lite 2026 / SOC 2 Type II",
   "targetFilename": "AcmeCorp-Security-Assessment-2026.xlsx",
   "createdAt": "2026-10-24T00:28:34.090Z",
-  "updatedAt": "2026-10-24T03:51:07.990Z",
+  "updatedAt": "2026-10-24T04:12:22.873Z",
   "claims": [
     {
       "id": "claim-1",
@@ -13,7 +13,7 @@
       "question": "Are production database backups and storage volumes encrypted at rest with customer-managed keys (CMK)?",
       "vendorDraftAnswer": "Yes. All production RDS clusters, Aurora replicas, and EBS volumes enforce AES-256 KMS envelope encryption using dedicated Customer Managed Keys with automatic rotation.",
       "status": "red",
-      "statusDetail": "AI Synthesized with Claude 3.7 Sonnet (2 verified sources)",
+      "statusDetail": "1 Discrepancy Flagged: Policy mandates connection session level, code injects per HTTP request",
       "limitations": "Runtime AWS RDS parameter groups uninspected. Requires developer confirmation.",
       "primarySourcePath": "infra/terraform/modules/rds/main.tf",
       "linePageRef": "Lines 64–88",
@@ -1010,6 +1010,17 @@
     }
   ],
   "exportHistory": [
+    {
+      "id": "exp-1792814524880",
+      "filename": "AcmeCorp_Enterprise_Security_2026-COMPLETED-v1.0.xlsx",
+      "format": "XLSX",
+      "assessment": "AcmeCorp Enterprise Security 2026",
+      "exportedAt": "Oct 24, 09:32 AM",
+      "status": "Final Auditor Signed",
+      "isDraft": false,
+      "sizeBytes": 9308,
+      "downloadUrl": "/api/export/download/exp-1792814524880"
+    },
     {
       "id": "exp-1",
       "filename": "AcmeCorp-Security-Assessment-2026-DRAFT-v0.9.xlsx",

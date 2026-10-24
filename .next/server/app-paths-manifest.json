@@ -1,0 +1,17 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/ai/synthesize/route": "app/api/ai/synthesize/route.js",
+  "/api/assessment/load-sample/route": "app/api/assessment/load-sample/route.js",
+  "/api/assessment/route": "app/api/assessment/route.js",
+  "/api/claims/update/route": "app/api/claims/update/route.js",
+  "/api/evidence/evaluate/route": "app/api/evidence/evaluate/route.js",
+  "/api/export/download/[id]/route": "app/api/export/download/[id]/route.js",
+  "/api/export/route": "app/api/export/route.js",
+  "/api/findings/resolve/route": "app/api/findings/resolve/route.js",
+  "/api/questionnaire/upload/route": "app/api/questionnaire/upload/route.js",
+  "/api/settings/route": "app/api/settings/route.js",
+  "/api/sources/connect-repo/route": "app/api/sources/connect-repo/route.js",
+  "/api/sources/upload-pdf/route": "app/api/sources/upload-pdf/route.js",
+  "/page": "app/page.js"
+}

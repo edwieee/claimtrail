@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8f9ff;
+  --surface: #ffffff;
+  --primary: #c2410c;
+  --on-surface: #0b1c30;
+  --secondary: #565e74;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Material Symbols Outlined Icon Standard Styling */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+}
+
+/* Forensic custom scrollbar */
+::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d3e4fe;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #bec6e0;
+}
+
+/* Hairline border */
+.hairline-border {
+  border: 1px solid #e2e8f0;
+}
+
+/* Card and elevation shadows */
+.metric-card-shadow {
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+}
+.elevation-popover {
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+}
+
+/* Design System Highlight Citation Box */
+.highlight-citation {
+  background-color: rgba(234, 88, 12, 0.08);
+  border-left: 3px solid #c2410c;
+}
+
+/* Pill utility */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  border-width: 1px;
+  border-style: solid;
+  line-height: 1.5;
+}

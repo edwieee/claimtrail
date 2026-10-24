@@ -1,0 +1,17 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/ai/synthesize/route": "/api/ai/synthesize",
+  "/api/assessment/load-sample/route": "/api/assessment/load-sample",
+  "/api/assessment/route": "/api/assessment",
+  "/api/claims/update/route": "/api/claims/update",
+  "/api/evidence/evaluate/route": "/api/evidence/evaluate",
+  "/api/export/download/[id]/route": "/api/export/download/[id]",
+  "/api/export/route": "/api/export",
+  "/api/findings/resolve/route": "/api/findings/resolve",
+  "/api/questionnaire/upload/route": "/api/questionnaire/upload",
+  "/api/settings/route": "/api/settings",
+  "/api/sources/connect-repo/route": "/api/sources/connect-repo",
+  "/api/sources/upload-pdf/route": "/api/sources/upload-pdf",
+  "/page": "/"
+}

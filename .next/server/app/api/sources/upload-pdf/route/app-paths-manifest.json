@@ -1,0 +1,3 @@
+{
+  "/api/sources/upload-pdf/route": "app/api/sources/upload-pdf/route.js"
+}

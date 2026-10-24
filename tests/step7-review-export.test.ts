@@ -6,6 +6,7 @@ import { generateCompletedQuestionnaireXlsx } from '../lib/xlsxExporter';
 import type { SecurityClaim } from '../types/claimtrail';
 
 describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
+  const baseSignals = { supporting: 1, conflicting: 0, pending: 0 };
   const sampleClaims: SecurityClaim[] = [
     {
       id: 'claim-step7-01',
@@ -18,10 +19,18 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       answerVersion: 2,
       status: 'green',
       statusDetail: 'Verified via Terraform & Policy §4.1',
+      limitations: 'Applies to EBS and RDS instances.',
+      primarySourcePath: 'infra/kms.tf',
+      linePageRef: 'Policy §4.1',
+      verifiedTimestamp: '2026-10-24 12:00:00 UTC',
+      signalsCount: baseSignals,
+      nodes: [],
+      links: [],
       reviewStatus: 'approved',
       approval: {
         status: 'approved',
         reviewer: 'Alice Doe (Lead Security Architect)',
+        decidedAt: '2026-10-24T12:00:00Z',
         timestamp: '2026-10-24T12:00:00Z',
         version: 2,
         notes: 'Verified against AWS KMS terraform configuration in infra/kms.tf.',
@@ -41,7 +50,7 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       ruleCheck: {
         ruleId: 'ENG-KMS-01',
         ruleName: 'AWS KMS Key Rotation Policy',
-        status: 'passed',
+        status: 'verified',
         description: 'Terraform aws_kms_key.enable_key_rotation is set to true.',
         matchConfidence: 98.4,
       },
@@ -55,6 +64,13 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       answerDraft: 'MFA is enforced via Okta SSO and GitHub organization security policies.',
       status: 'amber',
       statusDetail: 'Needs Review',
+      limitations: 'Console access audited.',
+      primarySourcePath: 'auth/okta.tf',
+      linePageRef: 'Policy §2.4',
+      verifiedTimestamp: '2026-10-24 12:00:00 UTC',
+      signalsCount: baseSignals,
+      nodes: [],
+      links: [],
       reviewStatus: 'needs_review',
       sheetName: 'Vendor Assessment',
       rowNumber: 5,
@@ -69,11 +85,20 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       vendorDraftAnswer: 'Draft unverified',
       status: 'red',
       statusDetail: 'TLS policy violation',
+      limitations: 'Ingress rule inspection flagged.',
+      primarySourcePath: 'k8s/ingress.yaml',
+      linePageRef: 'Policy §5.2',
+      verifiedTimestamp: '2026-10-24 12:00:00 UTC',
+      signalsCount: baseSignals,
+      nodes: [],
+      links: [],
       reviewStatus: 'rejected',
       approval: {
         status: 'rejected',
         reviewer: 'Bob Smith (Senior Auditor)',
+        decidedAt: '2026-10-24T12:05:00Z',
         timestamp: '2026-10-24T12:05:00Z',
+        version: 1,
         notes: 'Rejected: Ingress manifest still allows TLS 1.0 fallback.',
       },
       sheetName: 'Vendor Assessment',
@@ -89,10 +114,18 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       vendorDraftAnswer: 'Row-level security enforces isolation.',
       status: 'red',
       statusDetail: 'Open conflict with repo middleware',
+      limitations: 'Middleware AST check pending verification.',
+      primarySourcePath: 'auth/tenant_middleware.go',
+      linePageRef: 'Policy §3.2',
+      verifiedTimestamp: '2026-10-24 12:00:00 UTC',
+      signalsCount: baseSignals,
+      nodes: [],
+      links: [],
       reviewStatus: 'approved',
       approval: {
         status: 'approved',
         reviewer: 'Alice Doe (Lead Security Architect)',
+        decidedAt: '2026-10-24T12:10:00Z',
         timestamp: '2026-10-24T12:10:00Z',
         version: 1,
         notes: 'Risk accepted for legacy microservice pending v2 rewrite.',
@@ -144,7 +177,7 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
 
     // Load and inspect the generated workbook
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(exportResult.buffer);
+    await workbook.xlsx.load(exportResult.buffer as any);
 
     // Verify Audit Evidence Trail sheet exists
     const auditSheet = workbook.getWorksheet('Audit Evidence Trail');
@@ -155,7 +188,7 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
     let foundReviewerColumn = false;
     auditSheet?.eachRow((row) => {
       const valuesStr = JSON.stringify(row.values);
-      if (valuesStr.includes('STATUTORY COMPLIANCE NOTICE') || valuesStr.includes('internal verification only')) {
+      if (valuesStr.includes('STATUTORY COMPLIANCE NOTICE') || valuesStr.includes('internal reviewer verification')) {
         foundDisclaimer = true;
       }
       if (valuesStr.includes('Reviewer') && valuesStr.includes('Decision Timestamp')) {

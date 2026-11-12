@@ -115,13 +115,13 @@ export function OverviewDashboard({
         {/* ================================================================= */}
         {/* PAGE HEADER & ASSESSMENT CONTEXT                                  */}
         {/* ================================================================= */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-surface-container-highest">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-headline-lg font-headline-lg font-bold text-on-surface tracking-tight">
                 Final Review &amp; Approval Dashboard
               </h1>
-              <span className="bg-surface-container-low text-secondary border border-surface-container-high font-code-sm text-code-sm px-2 py-0.5 rounded">
+              <span className="bg-background text-secondary border border-border font-code-sm text-code-sm px-2 py-0.5 rounded">
                 STEP 7 FINAL AUDIT
               </span>
             </div>
@@ -133,14 +133,14 @@ export function OverviewDashboard({
           <div className="flex items-center gap-3">
             <button
               onClick={onNewAssessment}
-              className="px-3 py-1.5 text-xs font-medium rounded border border-surface-container-highest hover:bg-surface-container-low text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded border border-border hover:bg-background text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-[15px]">upload_file</span>
               <span>Import New XLSX</span>
             </button>
             <button
               onClick={() => onNavigateToExports?.()}
-              className="px-4 py-1.5 text-xs font-semibold rounded bg-primary-container text-on-primary hover:bg-[#ea580c] transition-colors shadow-xs flex items-center gap-1.5"
+              className="px-4 py-1.5 text-xs font-semibold rounded bg-primary text-on-primary hover:bg-accent-hover transition-colors  flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-[15px]">file_download</span>
               <span>Export Deliverables</span>
@@ -152,7 +152,7 @@ export function OverviewDashboard({
         {/* WORKBOOK EXPORT READINESS STATUS BANNER                           */}
         {/* ================================================================= */}
         <div
-          className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+          className={`p-4 rounded-lg border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
             isWorkbookReadyForExport
               ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
               : 'bg-amber-50/80 border-amber-200 text-amber-950'
@@ -197,7 +197,7 @@ export function OverviewDashboard({
             {isWorkbookReadyForExport ? (
               <button
                 onClick={() => onNavigateToExports?.()}
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold  flex items-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">download</span>
                 <span>Download Final Workbook</span>
@@ -205,7 +205,7 @@ export function OverviewDashboard({
             ) : (
               <button
                 onClick={() => onNavigateToExports?.()}
-                className="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-medium shadow-xs flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-medium  flex items-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">file_present</span>
                 <span>Export Draft with Watermark</span>
@@ -221,10 +221,10 @@ export function OverviewDashboard({
           {/* Metric 1: Total Questions */}
           <div
             onClick={() => setTableFilter('all')}
-            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
               tableFilter === 'all'
-                ? 'bg-surface-container-low border-primary-container shadow-xs'
-                : 'bg-surface-container-lowest border-surface-container-highest hover:border-secondary'
+                ? 'bg-background border-primary '
+                : 'bg-surface border-border hover:border-secondary'
             }`}
           >
             <div className="flex items-center justify-between text-secondary">
@@ -238,7 +238,7 @@ export function OverviewDashboard({
           {/* Metric 2: Answer Drafts */}
           <div
             onClick={() => setTableFilter('all')}
-            className="p-3.5 rounded-xl border bg-surface-container-lowest border-surface-container-highest transition-all"
+            className="p-3.5 rounded-lg border bg-surface border-border transition-all"
           >
             <div className="flex items-center justify-between text-secondary">
               <span className="text-[11px] font-semibold uppercase tracking-wider">Drafts Generated</span>
@@ -251,10 +251,10 @@ export function OverviewDashboard({
           {/* Metric 3: Awaiting Review */}
           <div
             onClick={() => setTableFilter('awaiting')}
-            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
               tableFilter === 'awaiting'
-                ? 'bg-amber-50/70 border-amber-300 shadow-xs'
-                : 'bg-surface-container-lowest border-surface-container-highest hover:border-amber-300'
+                ? 'bg-amber-50/70 border-amber-300 '
+                : 'bg-surface border-border hover:border-amber-300'
             }`}
           >
             <div className="flex items-center justify-between text-amber-700">
@@ -268,10 +268,10 @@ export function OverviewDashboard({
           {/* Metric 4: Approved */}
           <div
             onClick={() => setTableFilter('approved')}
-            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
               tableFilter === 'approved'
-                ? 'bg-emerald-50/70 border-emerald-300 shadow-xs'
-                : 'bg-surface-container-lowest border-surface-container-highest hover:border-emerald-300'
+                ? 'bg-emerald-50/70 border-emerald-300 '
+                : 'bg-surface border-border hover:border-emerald-300'
             }`}
           >
             <div className="flex items-center justify-between text-emerald-700">
@@ -285,10 +285,10 @@ export function OverviewDashboard({
           {/* Metric 5: Insufficient Evidence */}
           <div
             onClick={() => setTableFilter('insufficient')}
-            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
               tableFilter === 'insufficient'
-                ? 'bg-slate-100 border-slate-300 shadow-xs'
-                : 'bg-surface-container-lowest border-surface-container-highest hover:border-slate-300'
+                ? 'bg-slate-100 border-slate-300 '
+                : 'bg-surface border-border hover:border-slate-300'
             }`}
           >
             <div className="flex items-center justify-between text-secondary">
@@ -302,10 +302,10 @@ export function OverviewDashboard({
           {/* Metric 6: Unresolved Findings */}
           <div
             onClick={() => setTableFilter('findings')}
-            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+            className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
               tableFilter === 'findings'
-                ? 'bg-red-50/70 border-red-300 shadow-xs'
-                : 'bg-surface-container-lowest border-surface-container-highest hover:border-red-300'
+                ? 'bg-red-50/70 border-red-300 '
+                : 'bg-surface border-border hover:border-red-300'
             }`}
           >
             <div className="flex items-center justify-between text-error">
@@ -324,8 +324,8 @@ export function OverviewDashboard({
           {/* LEFT / PRIMARY WORKSPACE COLUMN (8 of 12 cols = ~66%) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Section A: Review Pipeline Progression Breakdown */}
-            <div className="bg-surface-container-lowest hairline-border rounded-xl p-5 metric-card-shadow">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-surface-container-highest gap-2">
+            <div className="bg-surface border border-border rounded-lg p-5 ">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border gap-2">
                 <div>
                   <h2 className="text-headline-sm font-headline-sm font-bold text-on-surface">
                     Questionnaire Approval Pipeline
@@ -335,7 +335,7 @@ export function OverviewDashboard({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high font-code-sm text-code-sm text-secondary">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background border border-border font-code-sm text-code-sm text-secondary">
                     <span className="w-2 h-2 rounded-full bg-emerald-600" />
                     {approvalPercent}% Formally Approved
                   </span>
@@ -398,7 +398,7 @@ export function OverviewDashboard({
               </div>
 
               {/* Informational rules hint */}
-              <div className="mt-4 p-3 rounded-lg bg-surface-container-low border border-surface-container-highest text-xs text-secondary flex items-start gap-2.5">
+              <div className="mt-4 p-3 rounded-lg bg-background border border-border text-xs text-secondary flex items-start gap-2.5">
                 <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">verified_user</span>
                 <div className="space-y-0.5">
                   <span className="font-semibold text-on-surface">Safe Approval Guardrails:</span> AI-drafted and human-edited answers remain in <span className="font-mono text-amber-800 bg-amber-50 px-1 py-0.2 rounded">needs_review</span> until explicitly signed off. Answers with changed evidence are flagged <span className="font-mono text-orange-800 bg-orange-50 px-1 py-0.2 rounded">stale</span>.
@@ -407,8 +407,8 @@ export function OverviewDashboard({
             </div>
 
             {/* Section B: Filterable Questions Review Table */}
-            <div className="bg-surface-container-lowest hairline-border rounded-xl overflow-hidden metric-card-shadow">
-              <div className="p-5 pb-3 border-b border-surface-container-highest space-y-3">
+            <div className="bg-surface border border-border rounded-lg overflow-hidden ">
+              <div className="p-5 pb-3 border-b border-border space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h2 className="text-headline-sm font-headline-sm font-bold text-on-surface">
@@ -421,7 +421,7 @@ export function OverviewDashboard({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={onNavigateToFindings}
-                      className="flex items-center gap-1 px-2.5 py-1 text-label-sm font-label-sm rounded border border-surface-container-highest hover:bg-surface-container-low text-secondary transition-colors"
+                      className="flex items-center gap-1 px-2.5 py-1 text-label-sm font-label-sm rounded border border-border hover:bg-background text-secondary transition-colors"
                     >
                       <span className="material-symbols-outlined text-xs">gavel</span>
                       <span>Findings ({findings.length})</span>
@@ -443,7 +443,7 @@ export function OverviewDashboard({
                     className={`px-3 py-1 rounded-md font-medium transition-colors whitespace-nowrap ${
                       tableFilter === 'all'
                         ? 'bg-on-surface text-surface-container-lowest font-semibold'
-                        : 'bg-surface-container-low text-secondary hover:text-on-surface'
+                        : 'bg-background text-secondary hover:text-on-surface'
                     }`}
                   >
                     All ({totalQuestions})
@@ -495,7 +495,7 @@ export function OverviewDashboard({
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-surface-container-low border-b border-surface-container-highest font-label-sm text-label-sm uppercase tracking-wider text-secondary">
+                    <tr className="bg-background border-b border-border font-label-sm text-label-sm uppercase tracking-wider text-secondary">
                       <th className="py-2.5 px-4 font-semibold w-20">ID</th>
                       <th className="py-2.5 px-4 font-semibold">Question &amp; Current Answer</th>
                       <th className="py-2.5 px-4 font-semibold w-32">Domain</th>
@@ -519,7 +519,7 @@ export function OverviewDashboard({
                         const isStale = c.reviewStatus === 'stale';
 
                         return (
-                          <tr key={c.id} className="hover:bg-surface-container-low transition-colors group">
+                          <tr key={c.id} className="hover:bg-background transition-colors group">
                             <td className="py-3 px-4 font-code-sm text-code-sm font-medium text-secondary align-top">
                               {c.code}
                             </td>
@@ -528,7 +528,7 @@ export function OverviewDashboard({
                                 {c.question}
                               </span>
                               {currentAnswer ? (
-                                <div className="text-secondary mt-1 text-xs line-clamp-2 bg-surface-container-low/60 p-1.5 rounded border border-surface-container-high/40">
+                                <div className="text-secondary mt-1 text-xs line-clamp-2 bg-background/60 p-1.5 rounded border border-border/40">
                                   {c.editedAnswer ? (
                                     <span className="text-[10px] font-semibold text-primary mr-1 uppercase">[Human Edited v{c.answerVersion || 1}]</span>
                                   ) : c.answerDraft ? (
@@ -597,7 +597,7 @@ export function OverviewDashboard({
                             <td className="py-3 px-4 text-right align-top">
                               <button
                                 onClick={() => onSelectQuestionForReview(c)}
-                                className="px-2.5 py-1 text-label-sm font-label-sm font-semibold rounded bg-surface-container-lowest border border-surface-container-highest hover:bg-surface-container-low text-primary hover:border-primary-container transition-colors shadow-2xs"
+                                className="px-2.5 py-1 text-label-sm font-label-sm font-semibold rounded bg-surface border border-border hover:bg-background text-primary hover:border-primary transition-colors "
                               >
                                 Review
                               </button>
@@ -610,7 +610,7 @@ export function OverviewDashboard({
                 </table>
               </div>
               {filteredClaims.length > 10 && (
-                <div className="p-3 bg-surface-container-low border-t border-surface-container-highest text-center">
+                <div className="p-3 bg-background border-t border-border text-center">
                   <button
                     onClick={() => onNavigateToQuestionnaire()}
                     className="text-xs text-primary font-semibold hover:underline"
@@ -625,15 +625,15 @@ export function OverviewDashboard({
           {/* RIGHT / SECONDARY WORKSPACE COLUMN (4 of 12 cols = ~34%) */}
           <div className="lg:col-span-4 space-y-6">
             {/* Card C: Real Connected Evidence Sources */}
-            <div className="bg-surface-container-lowest hairline-border rounded-xl p-5 metric-card-shadow">
-              <div className="flex items-center justify-between pb-3 border-b border-surface-container-highest">
+            <div className="bg-surface border border-border rounded-lg p-5 ">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-secondary text-base">source</span>
                   <h3 className="text-headline-sm font-headline-sm font-bold text-on-surface">
                     Evidence Sources
                   </h3>
                 </div>
-                <span className="px-2 py-0.5 font-code-sm text-code-sm bg-surface-container-low rounded border border-surface-container-highest text-secondary font-medium">
+                <span className="px-2 py-0.5 font-code-sm text-code-sm bg-background rounded border border-border text-secondary font-medium">
                   {sources.length} active
                 </span>
               </div>
@@ -654,7 +654,7 @@ export function OverviewDashboard({
                   sources.map((s, idx) => (
                     <div
                       key={s.id || idx}
-                      className="p-3 rounded-lg border border-surface-container-highest bg-surface-container-lowest hover:border-secondary transition-colors"
+                      className="p-3 rounded-lg border border-border bg-surface hover:border-secondary transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2.5 min-w-0">
@@ -688,7 +688,7 @@ export function OverviewDashboard({
                 )}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-surface-container-highest">
+              <div className="mt-3 pt-3 border-t border-border">
                 <button
                   onClick={onNavigateToSources}
                   className="w-full text-center py-1 text-xs text-primary font-semibold hover:underline"
@@ -699,7 +699,7 @@ export function OverviewDashboard({
             </div>
 
             {/* Card D: Statutory Regulatory Disclaimer */}
-            <div className="bg-amber-50/60 hairline-border border-amber-200 rounded-xl p-4 metric-card-shadow text-xs space-y-2">
+            <div className="bg-amber-50/60 border border-border border-amber-200 rounded-lg p-4  text-xs space-y-2">
               <div className="flex items-center gap-1.5 text-amber-900 font-bold uppercase tracking-wider text-[10px]">
                 <span className="material-symbols-outlined text-sm text-amber-700">shield</span>
                 <span>Statutory Compliance Notice</span>
@@ -710,14 +710,14 @@ export function OverviewDashboard({
             </div>
 
             {/* Card E: Quick Actions Execution Panel */}
-            <div className="bg-surface-container-low hairline-border rounded-xl p-5 metric-card-shadow space-y-3">
+            <div className="bg-background border border-border rounded-lg p-5  space-y-3">
               <h3 className="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-secondary">
                 Review &amp; Export Shortcuts
               </h3>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => onNavigateToQuestionnaire('needs_review')}
-                  className="w-full flex items-center justify-between py-2 px-3 bg-surface-container-lowest hover:bg-surface-bright text-on-surface font-label-md text-label-md rounded border border-surface-container-highest transition-colors shadow-2xs"
+                  className="w-full flex items-center justify-between py-2 px-3 bg-surface hover:bg-background text-on-surface font-label-md text-label-md rounded border border-border transition-colors "
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[16px] text-amber-600">rate_review</span>
@@ -728,7 +728,7 @@ export function OverviewDashboard({
 
                 <button
                   onClick={onNavigateToFindings}
-                  className="w-full flex items-center justify-between py-2 px-3 bg-surface-container-lowest hover:bg-surface-bright text-on-surface font-label-md text-label-md rounded border border-surface-container-highest transition-colors shadow-2xs"
+                  className="w-full flex items-center justify-between py-2 px-3 bg-surface hover:bg-background text-on-surface font-label-md text-label-md rounded border border-border transition-colors "
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[16px] text-red-600">gavel</span>
@@ -739,7 +739,7 @@ export function OverviewDashboard({
 
                 <button
                   onClick={() => onNavigateToExports?.()}
-                  className="w-full flex items-center justify-between py-2 px-3 bg-surface-container-lowest hover:bg-surface-bright text-on-surface font-label-md text-label-md rounded border border-surface-container-highest transition-colors shadow-2xs"
+                  className="w-full flex items-center justify-between py-2 px-3 bg-surface hover:bg-background text-on-surface font-label-md text-label-md rounded border border-border transition-colors "
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[16px] text-emerald-700">download_for_offline</span>

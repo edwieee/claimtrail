@@ -105,13 +105,13 @@ export function ExportsView({
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 max-w-[1600px] w-full mx-auto bg-background">
       {/* Page Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-container-highest">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-headline-xl font-headline-xl font-bold text-on-surface tracking-tight">
               Exports
             </h1>
-            <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-secondary border border-surface-container-highest">
+            <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-secondary border border-border">
               Assessment Deliverables
             </span>
           </div>
@@ -124,7 +124,7 @@ export function ExportsView({
           <button
             onClick={handleExportWorkbook}
             disabled={isExporting}
-            className="px-4 py-2 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-[#ea580c] transition-all shadow-sm flex items-center gap-2 border border-[#9A3412] disabled:opacity-60"
+            className="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-accent-hover transition-all  flex items-center gap-2 border border-[#9A3412] disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[18px]">
               {isExporting ? 'refresh' : 'file_download'}
@@ -139,7 +139,7 @@ export function ExportsView({
         {/* LEFT COLUMN: Export Deliverables & Package Configuration (7 Cols) */}
         <div className="lg:col-span-7 space-y-5">
           {/* Assessment Selector / Target File Banner */}
-          <div className="p-3.5 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs flex items-center justify-between">
+          <div className="p-3.5 bg-surface rounded-lg border border-border  flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-50 border border-emerald-200 rounded text-emerald-800">
                 <span className="material-symbols-outlined text-[20px]">table_view</span>
@@ -172,10 +172,10 @@ export function ExportsView({
             {/* Deliverable Card 1 (Primary XLSX) */}
             <div
               onClick={() => setIncludeXlsx(!includeXlsx)}
-              className={`p-4 bg-surface-container-lowest rounded-lg relative shadow-xs transition-all cursor-pointer ${
+              className={`p-4 bg-surface rounded-lg relative  transition-all cursor-pointer ${
                 includeXlsx
-                  ? 'border-2 border-primary-container'
-                  : 'border border-surface-container-highest opacity-75'
+                  ? 'border-2 border-primary'
+                  : 'border border-border opacity-75'
               }`}
             >
               <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5">
@@ -186,7 +186,7 @@ export function ExportsView({
                   type="checkbox"
                   checked={includeXlsx}
                   onChange={(e) => setIncludeXlsx(e.target.checked)}
-                  className="w-4 h-4 text-primary-container rounded border-surface-container-highest focus:ring-primary-container"
+                  className="w-4 h-4 text-primary-container rounded border-border focus:ring-primary-container"
                 />
               </div>
 
@@ -203,8 +203,8 @@ export function ExportsView({
                   </p>
 
                   {/* Question Count and Composition Pill */}
-                  <div className="mt-3.5 flex flex-wrap items-center gap-2 pt-2 border-t border-surface-container-highest">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high text-on-surface text-code-sm font-code-sm text-xs">
+                  <div className="mt-3.5 flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-background border border-border text-on-surface text-code-sm font-code-sm text-xs">
                       <span className="font-semibold text-on-surface">{claims.length} Total Questions:</span>
                       <span className="text-emerald-700 font-medium">{approvedCount} Approved</span>
                       <span className="text-surface-container-highest">•</span>
@@ -220,8 +220,8 @@ export function ExportsView({
           </div>
 
           {/* Package Configuration & Cryptographic Integrity Card */}
-          <div className="p-4 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-surface-container-highest">
+          <div className="p-4 bg-surface rounded-lg border border-border  space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary text-lg">shield</span>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
@@ -237,7 +237,7 @@ export function ExportsView({
                   type="checkbox"
                   checked={includeHashes}
                   onChange={(e) => setIncludeHashes(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 text-primary-container rounded border-surface-container-highest focus:ring-primary-container"
+                  className="mt-0.5 w-4 h-4 text-primary-container rounded border-border focus:ring-primary-container"
                 />
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export function ExportsView({
                   type="checkbox"
                   checked={embedLinks}
                   onChange={(e) => setEmbedLinks(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 text-primary-container rounded border-surface-container-highest focus:ring-primary-container"
+                  className="mt-0.5 w-4 h-4 text-primary-container rounded border-border focus:ring-primary-container"
                 />
                 <div className="flex flex-col">
                   <span className="text-body-md font-medium text-on-surface group-hover:text-primary transition-colors text-xs">
@@ -308,9 +308,9 @@ export function ExportsView({
 
         {/* RIGHT COLUMN: Readiness Checklist & Review Summary (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs space-y-4">
+          <div className="p-5 bg-surface rounded-lg border border-border  space-y-4">
             {/* Checklist Header with Overall Score */}
-            <div className="flex items-center justify-between pb-3 border-b border-surface-container-highest">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
                 <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                   Export Readiness &amp; Integrity Validation
@@ -328,7 +328,7 @@ export function ExportsView({
             {/* Checklist Items Grid */}
             <div className="space-y-2.5">
               {/* Item 1 */}
-              <div className="p-2.5 bg-surface rounded border border-surface-container-highest flex items-center justify-between">
+              <div className="p-2.5 bg-surface rounded border border-border flex items-center justify-between">
                 <div className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
                     <span className="material-symbols-outlined text-[14px]">check</span>
@@ -348,7 +348,7 @@ export function ExportsView({
               </div>
 
               {/* Item 2 */}
-              <div className="p-2.5 bg-surface rounded border border-surface-container-highest flex items-center justify-between">
+              <div className="p-2.5 bg-surface rounded border border-border flex items-center justify-between">
                 <div className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
                     <span className="material-symbols-outlined text-[14px]">check</span>
@@ -423,7 +423,7 @@ export function ExportsView({
               <button
                 onClick={handleExportWorkbook}
                 disabled={isExporting}
-                className="w-full py-2.5 px-4 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-[#ea580c] transition-all shadow-md flex items-center justify-center gap-2 border border-[#9A3412] disabled:opacity-60"
+                className="w-full py-2.5 px-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-accent-hover transition-all  flex items-center justify-center gap-2 border border-[#9A3412] disabled:opacity-60"
               >
                 <span className="material-symbols-outlined text-[18px]">task_alt</span>
                 <span>{isExporting ? 'Generating Deliverable...' : 'Generate & Download Deliverable'}</span>
@@ -434,8 +434,8 @@ export function ExportsView({
       </div>
 
       {/* BOTTOM SECTION: Deliverable History & Audit Trail Table */}
-      <div className="p-5 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-surface-container-highest">
+      <div className="p-5 bg-surface rounded-lg border border-border  space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-border">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary text-lg">history_edu</span>
             <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
@@ -450,7 +450,7 @@ export function ExportsView({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-surface-container-highest text-[11px] font-semibold text-secondary uppercase tracking-wider bg-surface-container-low/60">
+              <tr className="border-b border-border text-[11px] font-semibold text-secondary uppercase tracking-wider bg-background/60">
                 <th className="py-2.5 px-3">Deliverable Filename</th>
                 <th className="py-2.5 px-3">Format</th>
                 <th className="py-2.5 px-3">Assessment</th>
@@ -468,7 +468,7 @@ export function ExportsView({
                 </tr>
               ) : (
                 exportHistory.map((item) => (
-                  <tr key={item.id} className="hover:bg-surface-container-low transition-colors">
+                  <tr key={item.id} className="hover:bg-background transition-colors">
                     <td className="py-2.5 px-3 font-code-sm text-code-sm font-medium text-on-surface flex items-center gap-2">
                       <span
                         className={`material-symbols-outlined text-[16px] ${
@@ -480,7 +480,7 @@ export function ExportsView({
                       <span>{item.filename}</span>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-container border border-surface-container-highest font-medium text-secondary">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-container border border-border font-medium text-secondary">
                         {item.format}
                       </span>
                     </td>
@@ -507,7 +507,7 @@ export function ExportsView({
                     <td className="py-2.5 px-3 text-right">
                       <button
                         onClick={() => handleDownload(item)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface border border-surface-container-highest hover:bg-surface-container text-xs font-label-md transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface text-on-surface border border-border hover:bg-surface-container text-xs font-label-md transition-colors"
                       >
                         <span className="material-symbols-outlined text-[14px]">download</span>
                         <span>Download</span>

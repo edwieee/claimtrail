@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Settings, ShieldCheck, Key, Cpu, GitBranch, Save } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import type { AppSettings } from '@/types/claimtrail';
+import { Dialog } from '@/components/Dialog';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -76,22 +77,19 @@ export function SettingsModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4"
-      onClick={onClose}
-    >
+    <Dialog label="Engine and assessment settings" onClose={onClose}>
       <div
-        className="w-full max-w-lg bg-surface-container-lowest border border-surface-container-highest rounded-xl shadow-2xl overflow-hidden text-xs"
-        onClick={(e) => e.stopPropagation()}
+        className="ct-dialog max-w-lg flex flex-col text-xs"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-surface-container-highest bg-surface-container-low/50">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">settings</span>
-            <span className="font-semibold text-on-surface text-sm">Engine &amp; Assessment Settings</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-primary text-lg">settings</span>
+            <h2 className="font-semibold text-on-surface text-sm">Engine &amp; Assessment Settings</h2>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close settings"
             className="p-1 rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"
           >
             <X className="w-4 h-4" />
@@ -99,7 +97,7 @@ export function SettingsModal({
         </div>
 
         {/* Body */}
-        <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        <div className="p-5 space-y-5 min-h-0 overflow-y-auto">
           {isLoading ? (
             <div className="py-8 text-center text-secondary">Loading settings...</div>
           ) : (
@@ -110,10 +108,11 @@ export function SettingsModal({
                   AI Compliance Engine
                 </span>
                 <div>
-                  <label className="text-xs font-medium text-on-surface block mb-1">
+                  <label htmlFor="synthesis-model" className="text-xs font-medium text-on-surface block mb-1.5">
                     Synthesis Model
                   </label>
                   <select
+                    id="synthesis-model"
                     value={activeModel}
                     onChange={(e: any) => setActiveModel(e.target.value)}
                     className="w-full text-xs bg-surface-container-low border border-surface-container-highest rounded px-2.5 py-1.5 text-on-surface focus:outline-none focus:border-on-surface cursor-pointer"
@@ -132,11 +131,13 @@ export function SettingsModal({
                 </p>
 
                 <div>
-                  <label className="text-xs font-medium text-on-surface block mb-1 flex items-center justify-between">
+                  <label htmlFor="github-token" className="text-xs font-medium text-on-surface mb-1.5 flex flex-wrap items-center justify-between gap-2">
                     <span>GitHub Personal Access Token (Optional)</span>
                     <span className="text-[10px] text-secondary font-mono">Rate Limit Elevation</span>
                   </label>
                   <input
+                    id="github-token"
+                    autoComplete="off"
                     type="password"
                     placeholder="ghp_..."
                     value={githubToken}
@@ -187,7 +188,7 @@ export function SettingsModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-surface-container-highest bg-surface-container-low/50 flex items-center justify-between">
+        <div className="px-5 py-4 border-t border-border flex flex-wrap items-center justify-between gap-3 shrink-0">
           <span className="text-[10px] font-mono text-secondary">PERSISTENT SERVER STORE</span>
           <div className="flex items-center gap-2">
             <button
@@ -199,8 +200,8 @@ export function SettingsModal({
             </button>
             <button
               onClick={handleSave}
-              disabled={isSaving}
-              className="px-3.5 py-1.5 text-xs font-medium text-on-primary bg-primary-container hover:bg-[#ea580c] rounded transition-colors shadow-xs flex items-center gap-1.5"
+              disabled={isSaving || isLoading}
+              className="min-h-9 px-3.5 py-1.5 text-xs font-medium text-on-primary bg-primary hover:bg-accent-hover rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-60"
             >
               {isSaving ? (
                 <span>Saving...</span>
@@ -214,6 +215,6 @@ export function SettingsModal({
           </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

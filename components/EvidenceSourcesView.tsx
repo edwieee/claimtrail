@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import type { EvidenceSourceFile, EvidenceLibraryItem } from '@/types/claimtrail';
+import { Dialog } from '@/components/Dialog';
 
 interface EvidenceSourcesViewProps {
   sources?: EvidenceSourceFile[];
@@ -109,14 +110,14 @@ export function EvidenceSourcesView({
   const attentionCount = evidenceSources.filter((s) => s.status === 'needs_attention').length;
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-background">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col min-[1440px]:flex-row overflow-y-auto min-[1440px]:overflow-hidden bg-background">
       {/* Primary Data Pane (Scrollable) */}
-      <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-5 bg-background">
+      <main className="min-w-0 shrink-0 min-[1440px]:flex-1 min-[1440px]:overflow-y-auto px-5 py-6 md:p-7 space-y-6 bg-background">
         {/* Header Banner & Action Bar */}
-        <div className="flex items-start justify-between">
+        <div className="ct-page-header">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-headline-lg font-headline-lg font-bold text-on-surface tracking-tight">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1>
                 Evidence Sources
               </h1>
               <span className="bg-surface-container-low text-secondary border border-surface-container-high font-code-sm text-code-sm px-2 py-0.5 rounded">
@@ -128,35 +129,36 @@ export function EvidenceSourcesView({
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="ct-page-actions">
             <button
               onClick={() => onShowToast('Extraction rule set: AST + OCR v4.2 active', 'info')}
-              className="h-8 px-3 rounded border border-surface-container-highest bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 hover:bg-surface-container-low transition-colors shadow-xs"
+              className="px-3 rounded-md border border-border bg-surface text-secondary text-xs flex items-center gap-1.5 hover:bg-background transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px] text-secondary">tune</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">tune</span>
               <span>Extraction Rules</span>
             </button>
             <button
+              id="add-evidence-source"
               onClick={() => setIsAddModalOpen(true)}
-              className="h-8 px-3.5 rounded bg-primary-container hover:bg-[#ea580c] text-on-primary font-label-md text-label-md flex items-center gap-1.5 transition-colors border border-primary shadow-xs"
+              className="px-3.5 rounded-md bg-primary hover:bg-accent-hover text-on-primary text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px]">add</span>
               <span>Add Source</span>
             </button>
           </div>
         </div>
 
         {/* Compact Source Summary (3 Restrained Cards) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="ct-metrics ct-metrics-three">
           {/* Card 1: Total Sources */}
-          <div className="bg-surface-container-lowest border border-surface-container-highest rounded p-4 flex flex-col justify-between shadow-xs">
+          <div className="flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-label-sm font-label-sm text-secondary uppercase tracking-wider font-semibold">
                 Total Sources
               </span>
-              <span className="material-symbols-outlined text-secondary text-[18px]">folder</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[18px]">folder</span>
             </div>
-            <div className="mt-3 flex items-baseline justify-between">
+            <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-headline-xl font-headline-xl font-bold text-on-surface">{evidenceSources.length}</span>
                 <span className="text-label-sm font-label-sm text-secondary">connected</span>
@@ -165,23 +167,23 @@ export function EvidenceSourcesView({
                 {evidenceSources.length > 0 ? '100% Target Met' : 'Pending Ingestion'}
               </span>
             </div>
-            <div className="mt-2 pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px] text-secondary">
+            <div className="mt-2 pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-secondary">
               <span>All active evidence feeds</span>
               <span className="font-code-sm">{evidenceSources.length} of {evidenceSources.length} Active</span>
             </div>
           </div>
 
           {/* Card 2: Successfully Processed */}
-          <div className="bg-surface-container-lowest border border-surface-container-highest rounded p-4 flex flex-col justify-between shadow-xs">
+          <div className="flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-label-sm font-label-sm text-secondary uppercase tracking-wider font-semibold">
                 Successfully Processed
               </span>
-              <span className="material-symbols-outlined text-emerald-600 text-[18px]">
+              <span aria-hidden="true" className="material-symbols-outlined text-emerald-600 text-[18px]">
                 check_circle
               </span>
             </div>
-            <div className="mt-3 flex items-baseline justify-between">
+            <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-headline-xl font-headline-xl font-bold text-emerald-700">{readyCount}</span>
                 <span className="text-label-sm font-label-sm text-secondary">ready for audit</span>
@@ -190,21 +192,21 @@ export function EvidenceSourcesView({
                 Indexed Citations
               </span>
             </div>
-            <div className="mt-2 pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px] text-secondary">
+            <div className="mt-2 pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-secondary">
               <span>Fully Indexed Vector Pipeline</span>
               <span className="font-code-sm text-emerald-700">0 Parser Faults</span>
             </div>
           </div>
 
           {/* Card 3: Sources Needing Attention */}
-          <div className="bg-surface-container-lowest border border-surface-container-highest rounded p-4 flex flex-col justify-between shadow-xs">
+          <div className="flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-label-sm font-label-sm text-secondary uppercase tracking-wider font-semibold">
                 Sources Needing Attention
               </span>
-              <span className="material-symbols-outlined text-amber-600 text-[18px]">warning</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-amber-600 text-[18px]">warning</span>
             </div>
-            <div className="mt-3 flex items-baseline justify-between">
+            <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-headline-xl font-headline-xl font-bold text-amber-700">{attentionCount}</span>
                 <span className="text-label-sm font-label-sm text-secondary">with warning</span>
@@ -213,7 +215,7 @@ export function EvidenceSourcesView({
                 {attentionCount > 0 ? 'Pattern Flagged' : 'All Clear'}
               </span>
             </div>
-            <div className="mt-2 pt-2 border-t border-surface-container-highest/60 flex items-center justify-between text-[11px] text-secondary">
+            <div className="mt-2 pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-secondary">
               <span className="text-amber-800">Deterministic check findings</span>
               <span className="font-code-sm text-amber-700">{attentionCount > 0 ? 'Review Needed' : 'Verified'}</span>
             </div>
@@ -221,16 +223,17 @@ export function EvidenceSourcesView({
         </div>
 
         {/* Main Source Table Container */}
-        <div className="bg-surface-container-lowest border border-surface-container-highest rounded shadow-xs overflow-hidden">
+        <div className="ct-panel overflow-hidden">
           {/* Filters & Toolbar */}
           <div className="p-3 border-b border-surface-container-highest flex flex-wrap items-center justify-between gap-4 bg-surface-container-lowest">
             <div className="flex flex-wrap items-center gap-2.5 flex-1 max-w-xl">
               {/* Search within sources */}
-              <div className="relative w-64">
-                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
+              <div className="relative w-full sm:w-64">
+                <span aria-hidden="true" className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
                   search
                 </span>
                 <input
+                  aria-label="Filter evidence sources by name or hash"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-8 pl-8 pr-3 text-label-md font-label-md bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface placeholder:text-secondary/60 focus:outline-none focus:border-on-surface"
@@ -242,6 +245,7 @@ export function EvidenceSourcesView({
               {/* Filter: Type */}
               <div className="relative">
                 <select
+                  aria-label="Filter sources by type"
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="h-8 pl-3 pr-7 text-label-md font-label-md bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface appearance-none focus:outline-none focus:border-on-surface cursor-pointer"
@@ -250,7 +254,7 @@ export function EvidenceSourcesView({
                   <option value="pdf">PDF Policy (.pdf)</option>
                   <option value="repo">GitHub Repository</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
+                <span aria-hidden="true" className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
                   expand_more
                 </span>
               </div>
@@ -258,6 +262,7 @@ export function EvidenceSourcesView({
               {/* Filter: Status */}
               <div className="relative">
                 <select
+                  aria-label="Filter sources by processing status"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="h-8 pl-3 pr-7 text-label-md font-label-md bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface appearance-none focus:outline-none focus:border-on-surface cursor-pointer"
@@ -266,7 +271,7 @@ export function EvidenceSourcesView({
                   <option value="ready">Ready</option>
                   <option value="needs_attention">Needs Attention</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
+                <span aria-hidden="true" className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
                   expand_more
                 </span>
               </div>
@@ -282,45 +287,58 @@ export function EvidenceSourcesView({
 
           {/* Data Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table aria-label="Evidence sources" className="ct-data-table table-fixed min-w-[960px] [&_th]:whitespace-normal">
               <thead>
                 <tr className="border-b border-surface-container-highest bg-surface-container-low/50">
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[26%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[27%]">
                     Source
                   </th>
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[14%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[12%]">
                     Type
                   </th>
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[13%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[14%]">
                     Processing Status
                   </th>
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[21%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[20%]">
                     Extracted Content
                   </th>
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[11%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[10%]">
                     Linked Questions
                   </th>
                   <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider w-[9%]">
                     Last Updated
                   </th>
-                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider text-right w-[6%]">
+                  <th className="py-2.5 px-3 text-[11px] font-semibold text-secondary uppercase tracking-wider text-right w-[8%]">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container-highest">
+                {filteredSources.length === 0 && (
+                  <tr><td colSpan={7} className="p-8 text-center text-sm text-secondary">No evidence sources match the selected filters.</td></tr>
+                )}
                 {filteredSources.map((source) => {
                   const isSelected = selectedSourceId === source.id && isDrawerOpen;
                   return (
                     <tr
                       key={source.id}
+                      tabIndex={0}
+                      aria-label={`Inspect ${source.name}`}
+                      onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setSelectedSourceId(source.id);
+                          setIsDrawerOpen(true);
+                        }
+                      }}
                       onClick={() => {
                         setSelectedSourceId(source.id);
                         setIsDrawerOpen(true);
                       }}
                       className={`cursor-pointer transition-colors ${
                         isSelected
-                          ? 'bg-surface-container-low/70 border-l-2 border-l-primary-container'
+                          ? 'bg-accent-bg/50'
                           : 'hover:bg-surface-container-low/40'
                       }`}
                     >
@@ -335,7 +353,7 @@ export function EvidenceSourcesView({
                                 : 'bg-slate-100 border-slate-300 text-slate-800'
                             }`}
                           >
-                            <span className="material-symbols-outlined text-[16px]">
+                            <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
                               {source.type === 'xlsx'
                                 ? 'table_chart'
                                 : source.type === 'pdf'
@@ -344,8 +362,8 @@ export function EvidenceSourcesView({
                             </span>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-on-surface font-semibold truncate flex items-center gap-1.5 text-xs">
-                              <span className="hover:underline">{source.name}</span>
+                            <div className="text-on-surface font-medium flex flex-wrap items-center gap-1.5 text-xs">
+                              <span title={source.name} className="max-w-full truncate hover:underline">{source.name}</span>
                               <span className="text-[10px] font-code-sm text-secondary bg-surface-container-lowest px-1 py-0.2 rounded border border-surface-container-high">
                                 {source.sizeOrBranch}
                               </span>
@@ -397,7 +415,7 @@ export function EvidenceSourcesView({
                       <td className="py-3 px-3">
                         <span className="font-code-sm text-code-sm text-primary font-medium flex items-center gap-1">
                           <span>{source.linkedCount} questions</span>
-                          <span className="material-symbols-outlined text-[12px]">
+                          <span aria-hidden="true" className="material-symbols-outlined text-[12px]">
                             arrow_outward
                           </span>
                         </span>
@@ -430,8 +448,8 @@ export function EvidenceSourcesView({
         </div>
 
         {/* Evidence Verification Policy Notice */}
-        <div className="p-3.5 rounded bg-surface-container-low border border-surface-container-high flex items-start gap-3">
-          <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">
+        <div className="ct-notice flex items-start gap-3">
+          <span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] mt-0.5">
             verified_user
           </span>
           <div className="text-body-sm font-body-sm">
@@ -449,7 +467,7 @@ export function EvidenceSourcesView({
       {/* SLIDE-OVER SOURCE DETAIL DRAWER                                         */}
       {/* ======================================================================= */}
       {isDrawerOpen && (
-        <aside className="w-[480px] bg-surface-container-lowest border-l border-surface-container-highest flex flex-col h-full shadow-lg z-10 shrink-0">
+        <aside aria-label="Source details" className="w-full min-[1440px]:w-[360px] 2xl:w-[400px] bg-surface border-t min-[1440px]:border-t-0 min-[1440px]:border-l border-border flex flex-col min-h-80 min-[1440px]:h-full z-10 shrink-0">
           {/* Drawer Header */}
           <div className="p-4 border-b border-surface-container-highest flex items-start justify-between bg-surface-container-lowest">
             <div className="flex items-start gap-3 min-w-0">
@@ -462,7 +480,7 @@ export function EvidenceSourcesView({
                     : 'bg-slate-100 border-slate-300 text-slate-800'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">
+                <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
                   {selectedSource.type === 'pdf'
                     ? 'picture_as_pdf'
                     : selectedSource.type === 'xlsx'
@@ -471,8 +489,8 @@ export function EvidenceSourcesView({
                 </span>
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-headline-sm font-headline-sm text-on-surface font-semibold truncate max-w-[260px]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm text-on-surface font-medium break-all">
                     {selectedSource.name}
                   </h3>
                   <span
@@ -497,14 +515,15 @@ export function EvidenceSourcesView({
                 className="p-1 rounded text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors"
                 title="Close Drawer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
           </div>
 
           {/* Drawer Navigation Tabs */}
-          <div className="flex border-b border-surface-container-highest px-4 bg-surface-container-low/40">
+          <div role="group" aria-label="Source detail view" className="flex overflow-x-auto shrink-0 border-b border-border px-2 bg-surface">
             <button
+              aria-pressed={drawerTab === 'overview'}
               onClick={() => setDrawerTab('overview')}
               className={`px-3 py-2 text-label-md font-label-md transition-colors ${
                 drawerTab === 'overview'
@@ -515,6 +534,7 @@ export function EvidenceSourcesView({
               Overview
             </button>
             <button
+              aria-pressed={drawerTab === 'extracted'}
               onClick={() => setDrawerTab('extracted')}
               className={`px-3 py-2 text-label-md font-label-md transition-colors flex items-center gap-1.5 ${
                 drawerTab === 'extracted'
@@ -528,6 +548,7 @@ export function EvidenceSourcesView({
               </span>
             </button>
             <button
+              aria-pressed={drawerTab === 'linked'}
               onClick={() => setDrawerTab('linked')}
               className={`px-3 py-2 text-label-md font-label-md transition-colors flex items-center gap-1.5 ${
                 drawerTab === 'linked'
@@ -543,16 +564,16 @@ export function EvidenceSourcesView({
           </div>
 
           {/* Drawer Body Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+          <div className="min-[1440px]:flex-1 min-[1440px]:overflow-y-auto p-4 space-y-4 break-words">
             {drawerTab === 'extracted' && (
               <>
                 {selectedSource.extractedChunks && selectedSource.extractedChunks.length > 0 ? (
                   selectedSource.extractedChunks.map((chunk, i) => (
                     <div
                       key={chunk.id || i}
-                      className="border border-surface-container-highest rounded p-3 bg-surface-container-lowest shadow-xs space-y-2"
+                      className="py-3 border-b border-border last:border-b-0 space-y-3"
                     >
-                      <div className="flex items-center justify-between pb-2 border-b border-surface-container-highest">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="px-1.5 py-0.5 rounded bg-surface-container-low border border-surface-container-high text-[10px] font-code-sm font-semibold text-on-surface uppercase truncate">
                             {chunk.pageOrFile}
@@ -587,7 +608,7 @@ export function EvidenceSourcesView({
                             className="text-primary font-medium hover:underline flex items-center gap-0.5"
                           >
                             <span>Inspect</span>
-                            <span className="material-symbols-outlined text-[13px]">chevron_right</span>
+                            <span aria-hidden="true" className="material-symbols-outlined text-[13px]">chevron_right</span>
                           </button>
                         </div>
                       )}
@@ -618,7 +639,7 @@ export function EvidenceSourcesView({
                         className="text-xs text-primary font-medium hover:underline flex items-center gap-0.5"
                       >
                         Inspect
-                        <span className="material-symbols-outlined text-xs">chevron_right</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-xs">chevron_right</span>
                       </button>
                     </div>
                   )
@@ -653,7 +674,7 @@ export function EvidenceSourcesView({
                           className="text-primary hover:underline font-mono inline-flex items-center gap-0.5"
                         >
                           <span>{selectedSource.repoMetadata.owner}/{selectedSource.repoMetadata.repo}</span>
-                          <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                          <span aria-hidden="true" className="material-symbols-outlined text-[12px]">open_in_new</span>
                         </a>
                       </div>
 
@@ -666,7 +687,7 @@ export function EvidenceSourcesView({
                           className="text-primary hover:underline font-mono inline-flex items-center gap-0.5"
                         >
                           <span>{selectedSource.repoMetadata.commitSha.slice(0, 7)}</span>
-                          <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                          <span aria-hidden="true" className="material-symbols-outlined text-[12px]">open_in_new</span>
                         </a>
                       </div>
 
@@ -691,7 +712,7 @@ export function EvidenceSourcesView({
                 {selectedSource.repoMetadata?.warnings && selectedSource.repoMetadata.warnings.length > 0 && (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-900 space-y-1">
                     <div className="font-semibold flex items-center gap-1.5 text-amber-800">
-                      <span className="material-symbols-outlined text-[16px]">warning</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-[16px]">warning</span>
                       <span>Inspection Scope Notice</span>
                     </div>
                     {selectedSource.repoMetadata.warnings.map((w, idx) => (
@@ -732,7 +753,7 @@ export function EvidenceSourcesView({
                       }}
                       className="flex-1 py-1.5 px-3 bg-surface-container-low hover:bg-surface-container-high text-on-surface text-xs font-medium rounded border border-surface-container-high flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[14px]">refresh</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-[14px]">refresh</span>
                       <span>Re-sync Source</span>
                     </button>
                   )}
@@ -747,7 +768,7 @@ export function EvidenceSourcesView({
                       className="py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded border border-red-200 flex items-center justify-center gap-1 transition-colors"
                       title="Disconnect evidence source"
                     >
-                      <span className="material-symbols-outlined text-[14px]">delete</span>
+                      <span aria-hidden="true" className="material-symbols-outlined text-[14px]">delete</span>
                       <span>Disconnect</span>
                     </button>
                   )}
@@ -766,20 +787,21 @@ export function EvidenceSourcesView({
       {/* ADD SOURCE MODAL                                                        */}
       {/* ======================================================================= */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-surface-container-lowest border border-surface-container-highest rounded-xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <Dialog label="Connect evidence source" onClose={() => setIsAddModalOpen(false)}>
+          <div className="ct-dialog max-w-lg overflow-y-auto">
             <div className="p-5 border-b border-surface-container-highest flex items-center justify-between bg-surface-container-lowest">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">add_circle</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-primary text-xl">add_circle</span>
                 <h2 className="text-headline-sm font-headline-sm font-bold text-on-surface">
                   Connect Evidence Source
                 </h2>
               </div>
               <button
+                aria-label="Close source dialog"
                 onClick={() => setIsAddModalOpen(false)}
                 className="p-1 rounded text-secondary hover:text-on-surface"
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
@@ -787,6 +809,7 @@ export function EvidenceSourcesView({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
+                  aria-pressed={newSourceType === 'repo'}
                   onClick={() => setNewSourceType('repo')}
                   className={`p-2.5 rounded text-xs font-medium border text-center transition-colors ${
                     newSourceType === 'repo'
@@ -794,13 +817,14 @@ export function EvidenceSourcesView({
                       : 'border-surface-container-highest text-secondary hover:bg-surface-container-low'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-base block mx-auto mb-1">
+                  <span aria-hidden="true" className="material-symbols-outlined text-base block mx-auto mb-1">
                     terminal
                   </span>
                   GitHub Repo
                 </button>
                 <button
                   type="button"
+                  aria-pressed={newSourceType === 'pdf'}
                   onClick={() => setNewSourceType('pdf')}
                   className={`p-2.5 rounded text-xs font-medium border text-center transition-colors ${
                     newSourceType === 'pdf'
@@ -808,7 +832,7 @@ export function EvidenceSourcesView({
                       : 'border-surface-container-highest text-secondary hover:bg-surface-container-low'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-base block mx-auto mb-1">
+                  <span aria-hidden="true" className="material-symbols-outlined text-base block mx-auto mb-1">
                     picture_as_pdf
                   </span>
                   Policy PDF
@@ -817,10 +841,11 @@ export function EvidenceSourcesView({
 
               {newSourceType === 'repo' ? (
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-on-surface block">
+                  <label htmlFor="repository-url" className="text-xs font-medium text-on-surface block">
                     Public GitHub Repository URL
                   </label>
                   <input
+                    id="repository-url"
                     type="text"
                     value={newRepoUrl}
                     onChange={(e) => setNewRepoUrl(e.target.value)}
@@ -840,20 +865,21 @@ export function EvidenceSourcesView({
                     onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                     className="hidden"
                   />
-                  <div
+                  <button
+                    type="button"
                     onClick={() => modalFileInputRef.current?.click()}
-                    className="p-6 border-2 border-dashed border-surface-container-highest hover:border-primary-container rounded-lg text-center bg-surface-container-low/30 space-y-2 cursor-pointer transition-colors"
+                    className="w-full p-6 border border-dashed border-border hover:border-primary rounded-lg text-center bg-background space-y-2 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-3xl text-secondary">
+                    <span aria-hidden="true" className="material-symbols-outlined text-3xl text-secondary">
                       cloud_upload
                     </span>
-                    <div className="text-xs font-medium text-on-surface">
+                    <span className="block text-xs font-medium text-on-surface break-all">
                       {selectedFile ? selectedFile.name : `Click to choose ${newSourceType.toUpperCase()} file`}
-                    </div>
-                    <div className="text-[11px] text-secondary">
+                    </span>
+                    <span className="block text-[11px] text-secondary">
                       {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB selected` : 'Supports .pdf documents'}
-                    </div>
-                  </div>
+                    </span>
+                  </button>
                 </div>
               )}
 
@@ -869,7 +895,7 @@ export function EvidenceSourcesView({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-1.5 text-xs rounded bg-primary-container text-on-primary font-semibold hover:bg-[#ea580c] shadow-xs disabled:opacity-60"
+                  className="min-h-9 px-4 py-1.5 text-xs rounded-md bg-primary text-on-primary font-medium hover:bg-accent-hover disabled:opacity-60"
                 >
                   {isSubmitting
                     ? newSourceType === 'repo'
@@ -880,7 +906,7 @@ export function EvidenceSourcesView({
               </div>
             </form>
           </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );

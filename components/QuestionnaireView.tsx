@@ -99,9 +99,10 @@ export function QuestionnaireView({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 max-w-[1600px] w-full mx-auto bg-background">
+    <main className="ct-page space-y-6 max-w-[1500px] w-full mx-auto bg-background">
       <input
         type="file"
+        hidden
         ref={fileInputRef}
         onChange={handleFileChange}
         accept=".xlsx"
@@ -109,10 +110,10 @@ export function QuestionnaireView({
       />
 
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-container-highest">
+      <div className="ct-page-header pb-5 border-b border-border">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-headline-xl font-headline-xl font-bold text-on-surface tracking-tight">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1>
               Questionnaire Catalog
             </h1>
             <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-secondary border border-surface-container-highest">
@@ -124,14 +125,14 @@ export function QuestionnaireView({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="ct-page-actions">
           {onLoadSample && (
             <button
               onClick={onLoadSample}
-              className="px-3 py-2 bg-surface-container-lowest text-on-surface border border-surface-container-highest rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-all shadow-xs flex items-center gap-1.5"
+              className="px-3 py-2 bg-surface text-secondary border border-border rounded-md text-xs hover:bg-background transition-colors flex items-center gap-1.5"
               title="Reset and load sample assessment"
             >
-              <span className="material-symbols-outlined text-[17px] text-secondary">restart_alt</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[17px] text-secondary">restart_alt</span>
               <span>Load Sample Assessment</span>
             </button>
           )}
@@ -139,30 +140,30 @@ export function QuestionnaireView({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="px-3.5 py-2 bg-surface-container-lowest text-on-surface border border-surface-container-highest rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-all shadow-xs flex items-center gap-2"
+            className="px-3 py-2 bg-surface text-on-surface border border-border rounded-md text-xs hover:bg-background transition-colors flex items-center gap-2 disabled:opacity-60"
           >
-            <span className="material-symbols-outlined text-[18px] text-primary">upload_file</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary">upload_file</span>
             <span>{isUploading ? 'Parsing XLSX...' : 'Upload New XLSX'}</span>
           </button>
 
           <button
             onClick={onOpenReviewWorkspace}
-            className="px-4 py-2 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-[#ea580c] transition-all shadow-sm flex items-center gap-2 border border-[#9A3412]"
+            className="px-3 py-2 bg-on-surface text-white rounded-md text-xs font-medium hover:bg-inverse-surface transition-colors flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">verified_user</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">verified_user</span>
             <span>Open Review Workspace</span>
           </button>
         </div>
       </div>
 
       {uploadError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs flex items-center justify-between">
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-base">error</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-base">error</span>
             <span>{uploadError}</span>
           </div>
-          <button onClick={() => setUploadError(null)} className="text-secondary hover:text-on-surface">
-            <span className="material-symbols-outlined text-sm">close</span>
+          <button aria-label="Dismiss upload error" onClick={() => setUploadError(null)} className="p-1 text-secondary hover:text-on-surface">
+            <span aria-hidden="true" className="material-symbols-outlined text-sm">close</span>
           </button>
         </div>
       )}
@@ -171,15 +172,15 @@ export function QuestionnaireView({
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className="p-4 bg-surface-container-lowest rounded-lg border border-dashed border-surface-container-highest hover:border-primary-container/80 transition-colors shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        className="ct-panel p-4 border-dashed hover:border-primary transition-colors flex flex-wrap items-center justify-between gap-4"
       >
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded text-emerald-800">
-            <span className="material-symbols-outlined text-xl">table_chart</span>
+        <div className="flex items-center gap-3 min-w-0 flex-1 basis-80">
+          <div className="ct-file-icon p-2.5">
+            <span aria-hidden="true" className="material-symbols-outlined text-xl">table_chart</span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-on-surface break-all">
                 {targetFilename}
               </span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-medium font-code-sm">
@@ -197,18 +198,19 @@ export function QuestionnaireView({
             onClick={() => fileInputRef.current?.click()}
             className="text-xs text-primary font-code-sm bg-surface-container-low px-2.5 py-1 rounded border border-surface-container-high hover:bg-surface-container transition-colors flex items-center gap-1"
           >
-            <span className="material-symbols-outlined text-xs">file_upload</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-xs">file_upload</span>
             <span>Replace File</span>
           </button>
         </div>
       </div>
 
       {/* Filters and Search Toolbar */}
-      <div className="p-3 bg-surface-container-lowest rounded-lg border border-surface-container-highest flex flex-wrap items-center justify-between gap-3 shadow-xs">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="ct-toolbar">
+        <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
           {/* Status Pills */}
-          <div className="flex items-center bg-surface p-0.5 rounded border border-surface-container-highest text-label-sm font-label-sm">
+          <div role="group" aria-label="Filter by evidence status" className="ct-segmented">
             <button
+              aria-pressed={statusFilter === 'all'}
               onClick={() => setStatusFilter('all')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 statusFilter === 'all'
@@ -219,6 +221,7 @@ export function QuestionnaireView({
               All ({claims.length})
             </button>
             <button
+              aria-pressed={statusFilter === 'green'}
               onClick={() => setStatusFilter('green')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 statusFilter === 'green'
@@ -229,6 +232,7 @@ export function QuestionnaireView({
               Supported ({claims.filter((c) => c.status === 'green').length})
             </button>
             <button
+              aria-pressed={statusFilter === 'amber'}
               onClick={() => setStatusFilter('amber')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 statusFilter === 'amber'
@@ -239,6 +243,7 @@ export function QuestionnaireView({
               Needs Review ({claims.filter((c) => c.status === 'amber').length})
             </button>
             <button
+              aria-pressed={statusFilter === 'red'}
               onClick={() => setStatusFilter('red')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 statusFilter === 'red'
@@ -255,6 +260,7 @@ export function QuestionnaireView({
           {/* Domain Dropdown */}
           <div className="relative">
             <select
+              aria-label="Filter by domain"
               value={domainFilter}
               onChange={(e) => setDomainFilter(e.target.value)}
               className="h-8 pl-3 pr-7 text-label-sm font-label-sm bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface appearance-none focus:outline-none cursor-pointer"
@@ -266,18 +272,19 @@ export function QuestionnaireView({
                 </option>
               ))}
             </select>
-            <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
+            <span aria-hidden="true" className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[14px] text-secondary pointer-events-none">
               expand_more
             </span>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative w-64">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
+        <div className="relative w-full sm:w-64">
+          <span aria-hidden="true" className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">
             search
           </span>
           <input
+            aria-label="Search questions or answers"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-8 pl-8 pr-3 text-label-md font-label-md bg-surface border border-surface-container-highest rounded text-on-surface placeholder:text-secondary/60 focus:outline-none"
@@ -288,9 +295,9 @@ export function QuestionnaireView({
       </div>
 
       {/* Questions Data Table */}
-      <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg shadow-xs overflow-hidden">
+      <div className="ct-panel overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table aria-label="Questionnaire catalog" className="ct-data-table min-w-[960px]">
             <thead>
               <tr className="border-b border-surface-container-highest bg-surface-container-low/60 font-label-sm text-label-sm uppercase tracking-wider text-secondary">
                 <th className="py-2.5 px-4 font-semibold w-20">Code</th>
@@ -320,7 +327,7 @@ export function QuestionnaireView({
                       <p className="text-body-sm font-body-sm text-secondary mt-1 text-xs line-clamp-2 leading-relaxed">
                         {claim.vendorDraftAnswer}
                       </p>
-                      <div className="flex items-center gap-2 mt-1.5 text-[10.5px] text-secondary font-code-sm">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] text-secondary font-code-sm break-all">
                         <span>Ref: {claim.linePageRef || 'SOC2-CC6.1'}</span>
                         <span>•</span>
                         <span>Source: {claim.primarySourcePath}</span>
@@ -337,7 +344,7 @@ export function QuestionnaireView({
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm bg-surface-container text-on-surface text-xs">
+                      <span className="ct-domain">
                         {claim.category}
                       </span>
                     </td>
@@ -382,6 +389,6 @@ export function QuestionnaireView({
           </table>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

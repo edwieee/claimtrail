@@ -3,6 +3,7 @@
 import React from 'react';
 import { SecurityClaim, EvidenceNode } from '@/types/claimtrail';
 import { X, GitBranch, Copy, Check } from 'lucide-react';
+import { Dialog } from '@/components/Dialog';
 
 interface DetailInspectorModalProps {
   claim: SecurityClaim;
@@ -36,17 +37,13 @@ export const DetailInspectorModal: React.FC<DetailInspectorModalProps> = ({
   }[status];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-      onClick={onClose}
-    >
+    <Dialog label="Evidence inspector" onClose={onClose}>
       <div
-        className="w-full max-w-xl bg-surface border border-border rounded shadow-card flex flex-col max-h-[84vh] overflow-hidden text-sm"
-        onClick={(e) => e.stopPropagation()}
+        className="ct-dialog max-w-xl flex flex-col text-sm"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border shrink-0 bg-canvas">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-border shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
             <span className="text-xs font-mono text-text-tertiary uppercase tracking-wider shrink-0">
               Evidence Inspector
             </span>
@@ -58,6 +55,7 @@ export const DetailInspectorModal: React.FC<DetailInspectorModalProps> = ({
             <span className="text-2xs font-mono text-signal-amber font-semibold">DEMO AUDIT TRAIL</span>
             <button
               onClick={onClose}
+              aria-label="Close evidence inspector"
               className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-border transition-colors"
             >
               <X className="w-4 h-4" />
@@ -165,6 +163,6 @@ export const DetailInspectorModal: React.FC<DetailInspectorModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };

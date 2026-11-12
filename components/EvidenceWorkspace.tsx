@@ -173,9 +173,15 @@ export const EvidenceWorkspace: React.FC<EvidenceWorkspaceProps> = ({
           nodeRefs.current[node.id] = el;
         }}
         onClick={() => onSelectNode(node)}
-        className={`bg-white rounded border cursor-pointer transition-all duration-150 relative z-10 flex flex-col justify-between p-2.5 text-left w-full ${
+        role="button"
+        tabIndex={0}
+        aria-pressed={isSelected}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectNode(node); }
+        }}
+        className={`bg-white rounded border cursor-pointer transition-colors duration-150 relative z-10 flex flex-col justify-between p-3 text-left w-full ${
           isSelected
-            ? 'border-orange-500 ring-2 ring-orange-200 shadow-xs'
+            ? 'border-primary'
             : 'border-console-border hover:border-console-faint hover:shadow-2xs'
         } ${isClaim ? 'bg-orange-50/15' : ''}`}
       >
@@ -323,7 +329,7 @@ export const EvidenceWorkspace: React.FC<EvidenceWorkspaceProps> = ({
         <div
           ref={containerRef}
           style={{ transform: `scale(${zoomLevel})` }}
-          className="w-full max-w-6xl relative transition-transform duration-150 origin-center my-auto"
+          className="w-full min-w-[800px] max-w-6xl relative transition-transform duration-150 origin-center my-auto"
         >
           {/* SVG Connector Layer - Drawn strictly behind nodes */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">

@@ -59,7 +59,7 @@ export const BottomPanels: React.FC<BottomPanelsProps> = ({
   };
 
   return (
-    <footer className="h-[260px] xl:h-[280px] border-t border-console-border bg-console-card select-none grid grid-cols-1 lg:grid-cols-[30%_43%_27%] shrink-0 divide-y lg:divide-y-0 lg:divide-x divide-console-border text-xs z-20 min-h-0 overflow-hidden">
+    <footer className="max-h-[50vh] lg:h-[260px] xl:h-[280px] border-t border-console-border bg-console-card grid grid-cols-1 lg:grid-cols-[30%_43%_27%] shrink-0 divide-y lg:divide-y-0 lg:divide-x divide-console-border text-xs z-20 min-h-0 overflow-auto lg:overflow-hidden">
       {/* Panel 1: Claim Inspector (30%) */}
       <div className="flex flex-col h-full bg-white overflow-hidden min-h-0 min-w-0">
         <div className="h-7 px-3 bg-console-subtle border-b border-console-border flex items-center justify-between shrink-0">
@@ -149,7 +149,7 @@ export const BottomPanels: React.FC<BottomPanelsProps> = ({
                     onClick={() => onSelectClaim(claim)}
                     className={`cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-orange-50/80 text-console-text font-medium border-l-2 border-console-accent'
+                        ? 'bg-orange-50/80 text-console-text font-medium border-l border-console-accent'
                         : 'hover:bg-console-subtle/60 text-console-muted hover:text-console-text'
                     }`}
                   >
@@ -199,7 +199,7 @@ export const BottomPanels: React.FC<BottomPanelsProps> = ({
             <div
               key={conflict.id}
               onClick={() => onSelectConflict(conflict)}
-              className="p-2 rounded border border-console-border hover:border-console-accent bg-console-subtle/30 hover:bg-white cursor-pointer transition-all space-y-1"
+              className="p-2 rounded border border-console-border hover:border-console-accent bg-console-subtle/30 hover:bg-white cursor-pointer transition-colors space-y-1"
             >
               <div className="flex items-center justify-between text-3xs font-mono">
                 <div className="flex items-center space-x-1 truncate">

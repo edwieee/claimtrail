@@ -328,7 +328,7 @@ export function ReviewWorkspace({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div
               onClick={onNavigateToQuestions}
-              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-all"
+              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-colors"
             >
               <div className="text-xs font-semibold text-text-primary flex items-center justify-between">
                 <span>Review Questions (5)</span>
@@ -341,7 +341,7 @@ export function ReviewWorkspace({
 
             <div
               onClick={onNavigateToEvidence}
-              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-all"
+              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-colors"
             >
               <div className="text-xs font-semibold text-text-primary flex items-center justify-between">
                 <span>Trace Evidence Graph</span>
@@ -354,7 +354,7 @@ export function ReviewWorkspace({
 
             <div
               onClick={onNavigateToFindings}
-              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-all"
+              className="p-4 bg-surface border border-border rounded hover:border-border-strong cursor-pointer transition-colors"
             >
               <div className="text-xs font-semibold text-text-primary flex items-center justify-between">
                 <span>Active Findings ({metrics.activeFindings})</span>

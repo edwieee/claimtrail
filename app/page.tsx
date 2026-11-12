@@ -394,12 +394,12 @@ export default function DashboardPage() {
       questionnaire: { label: 'Run Evidence Check', action: handleRunEvidenceCheck },
       sources: {
         label: 'Add Evidence Source',
-        action: () => setCurrentNav('sources'),
+        action: () => document.getElementById('add-evidence-source')?.click(),
       },
       findings: { label: 'Run Evidence Check', action: handleRunEvidenceCheck },
       exports: {
         label: 'Export Workbook',
-        action: () => setCurrentNav('exports'),
+        action: () => document.getElementById('export-workbook')?.click(),
       },
       review: { label: 'Run Evidence Check', action: handleRunEvidenceCheck },
       questions: { label: 'Run Evidence Check', action: handleRunEvidenceCheck },
@@ -426,7 +426,7 @@ export default function DashboardPage() {
       />
 
       {/* ── Main Workspace Area ── */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+      <div id="app-workspace" className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* Top Utility Bar */}
         <AppTopBar
           breadcrumb={breadcrumb}
@@ -436,11 +436,12 @@ export default function DashboardPage() {
           isRunningCheck={isRunningCheck}
           onRunEvidenceCheck={handleRunEvidenceCheck}
           onOpenFindings={() => setCurrentNav('findings')}
+          onOpenSettings={() => setIsSettingsOpen(true)}
           primaryActionLabel={primaryActionConfig.label}
           onPrimaryAction={primaryActionConfig.action}
         />
 
-        <nav className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-surface-container-highest bg-surface-container-lowest px-3 py-2 shrink-0">
+        <nav aria-label="Mobile navigation" className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-border bg-surface px-3 py-2 shrink-0">
           {[
             ['overview', 'Overview'],
             ['questionnaire', 'Questionnaire'],
@@ -450,13 +451,14 @@ export default function DashboardPage() {
           ].map(([nav, label]) => (
             <button
               key={nav}
+              aria-current={currentNav === nav ? 'page' : undefined}
               onClick={() => {
                 setCurrentNav(nav as NavItem);
                 if (nav === 'questionnaire') setQuestionnaireMode('catalog');
               }}
-              className={`shrink-0 rounded px-2.5 py-1.5 text-label-sm font-label-sm ${
+              className={`shrink-0 rounded-md px-3 py-2 text-xs font-medium ${
                 currentNav === nav || (nav === 'questionnaire' && (currentNav === 'review' || currentNav === 'questions'))
-                  ? 'bg-on-surface text-surface-container-lowest'
+                  ? 'bg-accent-bg text-primary'
                   : 'text-secondary hover:bg-surface-container-low'
               }`}
             >

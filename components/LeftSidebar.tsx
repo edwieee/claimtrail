@@ -81,7 +81,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
   return (
     <aside
-      className={`bg-console-card border-r border-console-border flex flex-col justify-between select-none shrink-0 transition-all duration-150 z-20 ${
+      className={`bg-console-card border-r border-console-border flex flex-col justify-between select-none shrink-0 transition-[width] duration-150 z-20 ${
         isCollapsed ? 'w-12' : 'w-56 lg:w-60'
       }`}
     >

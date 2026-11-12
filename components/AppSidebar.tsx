@@ -41,13 +41,13 @@ export function AppSidebar({
       : currentNav;
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 h-screen bg-surface-container-lowest border-r border-surface-container-highest flex-col justify-between p-4 select-none z-30">
+    <aside id="app-navigation" aria-label="Workspace sidebar" className="hidden md:flex w-56 shrink-0 h-full bg-surface border-r border-border flex-col justify-between px-3 py-5 select-none z-30 overflow-y-auto">
       {/* Top Brand & Main Nav */}
       <div className="flex flex-col gap-5">
         {/* Brand Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-surface-container-high">
+        <div className="flex items-center justify-between px-2 pb-5 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-on-surface flex items-center justify-center text-surface-container-lowest font-headline-sm font-bold tracking-tight shadow-sm">
+            <div className="w-8 h-8 rounded-md bg-on-surface flex items-center justify-center text-surface-container-lowest text-xs font-semibold tracking-tight">
               <span>CT</span>
             </div>
             <div className="flex flex-col">
@@ -55,7 +55,7 @@ export function AppSidebar({
                 <span className="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight leading-none">
                   ClaimTrail
                 </span>
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-code-sm text-secondary bg-surface-container-low border border-surface-container-highest">
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-code-sm text-secondary bg-surface-container-low border border-surface-container-highest">
                   v2.4
                 </span>
               </div>
@@ -69,30 +69,31 @@ export function AppSidebar({
         {/* Import Batch CTA Button */}
         <button
           onClick={onImportBatch || (() => onNavChange('questionnaire'))}
-          className="w-full flex items-center justify-center gap-2 py-1.5 px-3 bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg border border-surface-container-high transition-colors shadow-xs"
+          className="w-full flex items-center justify-center gap-2 min-h-9 px-3 bg-surface hover:bg-background text-on-surface text-label-md font-medium rounded-md border border-border transition-colors"
         >
-          <span className="material-symbols-outlined text-[16px] text-primary">
+          <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-primary">
             upload_file
           </span>
           <span>Import Batch</span>
         </button>
 
         {/* Primary Navigation Tabs */}
-        <nav className="flex flex-col gap-1">
+        <nav aria-label="Main navigation" className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive = activeId === item.id;
             return (
               <button
                 key={item.id}
+                aria-current={isActive ? 'page' : undefined}
                 onClick={() => onNavChange(item.id)}
-                className={`flex items-center justify-between w-full px-3 py-2 font-label-md text-label-md rounded-lg transition-colors text-left ${
+                className={`flex items-center justify-between w-full min-h-10 px-3 py-2 font-label-md text-label-md rounded-md transition-colors text-left ${
                   isActive
-                    ? 'text-on-surface bg-surface-container-low font-semibold border border-surface-container-high shadow-xs'
+                    ? 'text-primary bg-accent-bg font-medium border border-transparent'
                     : 'text-secondary hover:bg-surface-container-low hover:text-on-surface border border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span
+                  <span aria-hidden="true"
                     className={`material-symbols-outlined text-[18px] ${
                       isActive ? 'text-primary' : 'text-secondary'
                     }`}
@@ -105,7 +106,7 @@ export function AppSidebar({
                   <span
                     className={`font-code-sm text-code-sm px-1.5 py-0.2 rounded ${
                       item.badgeColor === 'copper'
-                        ? 'bg-primary-container text-on-primary font-semibold'
+                        ? 'bg-accent-bg text-primary font-medium'
                         : isActive
                         ? 'bg-surface-container-lowest text-on-surface border border-surface-container-high'
                         : 'bg-surface-container text-secondary'
@@ -123,21 +124,21 @@ export function AppSidebar({
       {/* Bottom Footer Section */}
       <div className="flex flex-col gap-1 pt-4 border-t border-surface-container-high">
         {/* Live Engine Status */}
-        <div className="px-2.5 py-1.5 flex items-center justify-between bg-surface-container-low rounded border border-surface-container-highest/70 mb-2">
+        <div className="px-3 py-1.5 flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600" />
             <span className="font-code-sm text-code-sm text-secondary">
               Engine v2.4 Active
             </span>
           </div>
-          <span className="text-[10px] text-secondary font-code-sm">99.98%</span>
+          <span className="text-[11px] text-secondary font-code-sm">99.98%</span>
         </div>
 
         <button
           onClick={onOpenSettings}
           className="flex items-center gap-2.5 px-3 py-2 text-secondary hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors text-left"
         >
-          <span className="material-symbols-outlined text-[18px]">settings</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">settings</span>
           <span>Settings</span>
         </button>
 

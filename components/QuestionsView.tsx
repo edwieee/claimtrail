@@ -105,6 +105,7 @@ export function QuestionsView({
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               type="text"
+              aria-label="Search questionnaire claims"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search code, question, or path..."
@@ -162,6 +163,7 @@ export function QuestionsView({
           {/* Category Dropdown */}
           <div className="relative">
             <select
+              aria-label="Filter by category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="text-xs bg-canvas border border-border rounded px-2.5 py-1.5 text-text-primary focus:outline-none focus:border-accent cursor-pointer pr-7"
@@ -239,6 +241,8 @@ export function QuestionsView({
                       {/* Expand Toggle */}
                       <button
                         type="button"
+                        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${claim.code}`}
+                        aria-expanded={isExpanded}
                         className="mt-0.5 text-text-tertiary hover:text-text-primary p-0.5"
                         onClick={(e) => {
                           e.stopPropagation();

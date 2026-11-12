@@ -120,6 +120,7 @@ export const TopUtilityBar: React.FC<TopUtilityBarProps> = ({
           <Search className="w-3 h-3 text-console-faint absolute left-2 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Search claims"
             placeholder="Search claims..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}

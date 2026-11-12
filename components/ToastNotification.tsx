@@ -19,14 +19,15 @@ export function ToastNotification({ message, type = 'info', onClose }: ToastProp
       : 'border-border bg-surface text-text-primary';
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 max-w-md animate-in fade-in slide-in-from-bottom-2 duration-200">
+    <div role="status" aria-live="polite" className="ct-toast">
       <div
-        className={`flex items-start gap-3 p-3.5 rounded border shadow-card text-xs ${borderCls}`}
+        className={`flex items-start gap-3 p-3.5 rounded-lg border elevation-popover text-xs ${borderCls}`}
       >
         <Icon className="w-4 h-4 shrink-0 mt-0.5" />
         <div className="flex-1 font-medium leading-relaxed">{message}</div>
         <button
           onClick={onClose}
+          aria-label="Dismiss notification"
           className="text-text-tertiary hover:text-text-primary p-0.5 rounded transition-colors"
         >
           <X className="w-3.5 h-3.5" />

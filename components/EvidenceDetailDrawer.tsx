@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, FileText, GitBranch, ShieldCheck, Copy, Check, ExternalLink, HelpCircle } from 'lucide-react';
 import type { EvidenceLibraryItem } from '@/types/claimtrail';
+import { Dialog } from '@/components/Dialog';
 
 interface EvidenceDetailDrawerProps {
   item: EvidenceLibraryItem | null;
@@ -35,14 +36,13 @@ export function EvidenceDetailDrawer({ item, onClose, onNavigateToQuestion }: Ev
   }[item.status];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/25 backdrop-blur-[1px]">
+    <Dialog label="Evidence details" onClose={onClose} drawer>
       <div
-        className="w-full max-w-lg bg-surface border-l border-border h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-200"
-        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-surface border-l border-border h-full flex flex-col elevation-popover"
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-canvas/60 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-border shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-2xs font-mono uppercase tracking-wider text-text-tertiary font-semibold">
               Evidence Detail Drawer
             </span>
@@ -56,6 +56,7 @@ export function EvidenceDetailDrawer({ item, onClose, onNavigateToQuestion }: Ev
             </span>
             <button
               onClick={onClose}
+              aria-label="Close evidence details"
               className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-border/60 transition-colors"
             >
               <X className="w-4 h-4" />
@@ -64,7 +65,7 @@ export function EvidenceDetailDrawer({ item, onClose, onNavigateToQuestion }: Ev
         </div>
 
         {/* Drawer Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
+        <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs break-words">
           {/* Top Title & Status */}
           <div>
             <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -164,6 +165,6 @@ export function EvidenceDetailDrawer({ item, onClose, onNavigateToQuestion }: Ev
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

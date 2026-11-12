@@ -222,12 +222,12 @@ export function FindingsAndChecksView({
   const insufficientCount = checkResults.filter((check) => check.status === 'insufficient_evidence').length;
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5 bg-background custom-scrollbar">
+    <main className="ct-page flex flex-col gap-6 bg-background">
       {/* Header Section */}
-      <div className="flex items-start justify-between">
+      <div className="ct-page-header">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-headline-lg font-headline-lg font-bold text-on-surface tracking-tight">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1>
               Findings
             </h1>
             <span className="bg-[#fef2f2] text-[#b91c1c] border border-[#fecaca] px-2 py-0.5 rounded text-code-sm font-code-sm uppercase tracking-wide">
@@ -241,13 +241,13 @@ export function FindingsAndChecksView({
             Checks run: {checkResults.length} · Passed: {passedCount} · Insufficient evidence: {insufficientCount}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ct-page-actions">
           {onRunEvidenceCheck && (
             <button
               onClick={onRunEvidenceCheck}
-              className="h-8 px-3 rounded bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 hover:bg-[#ea580c] transition-colors shadow-sm border border-[#9a3412]"
+              className="px-3 rounded-md bg-surface text-on-surface text-xs font-medium flex items-center gap-1.5 hover:bg-background transition-colors border border-border"
             >
-              <span className="material-symbols-outlined text-[16px]">refresh</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px]">refresh</span>
               <span>Re-run Evidence Check</span>
             </button>
           )}
@@ -255,14 +255,14 @@ export function FindingsAndChecksView({
       </div>
 
       {/* Metric Tiles Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="ct-metrics shrink-0">
         {/* Tile 1: Open Findings */}
-        <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-highest shadow-xs flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
           <div className="flex items-center justify-between text-secondary">
             <span className="text-label-sm font-label-sm uppercase tracking-wider text-secondary font-semibold">
               Open Findings
             </span>
-            <span className="material-symbols-outlined text-[16px] text-primary">warning</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-primary">warning</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{openCount}</span>
@@ -273,12 +273,12 @@ export function FindingsAndChecksView({
         </div>
 
         {/* Tile 2: Policy-Implementation Conflicts */}
-        <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-highest shadow-xs flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
           <div className="flex items-center justify-between text-secondary">
             <span className="text-label-sm font-label-sm uppercase tracking-wider text-secondary font-semibold">
               Policy–Implementation Conflicts
             </span>
-            <span className="material-symbols-outlined text-[16px] text-amber-600">rule</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-amber-600">rule</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{conflictCount}</span>
@@ -287,12 +287,12 @@ export function FindingsAndChecksView({
         </div>
 
         {/* Tile 3: Missing Evidence */}
-        <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-highest shadow-xs flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
           <div className="flex items-center justify-between text-secondary">
             <span className="text-label-sm font-label-sm uppercase tracking-wider text-secondary font-semibold">
               Missing Evidence
             </span>
-            <span className="material-symbols-outlined text-[16px] text-secondary">search_off</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">search_off</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{missingCount}</span>
@@ -303,12 +303,12 @@ export function FindingsAndChecksView({
         </div>
 
         {/* Tile 4: Reviewed Findings */}
-        <div className="bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-highest shadow-xs flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
           <div className="flex items-center justify-between text-secondary">
             <span className="text-label-sm font-label-sm uppercase tracking-wider text-secondary font-semibold">
               Reviewed Findings
             </span>
-            <span className="material-symbols-outlined text-[16px] text-emerald-600">task_alt</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-emerald-600">task_alt</span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-headline-xl font-headline-xl text-on-surface font-bold">{reviewedCount}</span>
@@ -318,11 +318,12 @@ export function FindingsAndChecksView({
       </div>
 
       {/* Filter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest p-2.5 rounded-lg border border-surface-container-highest">
+      <div className="ct-toolbar">
         {/* Left: Filters */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center bg-surface p-0.5 rounded border border-surface-container-highest text-label-sm font-label-sm">
+        <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
+          <div role="group" aria-label="Filter by finding type" className="ct-segmented">
             <button
+              aria-pressed={typeFilter === 'all'}
               onClick={() => setTypeFilter('all')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 typeFilter === 'all'
@@ -333,6 +334,7 @@ export function FindingsAndChecksView({
               All ({findingsList.length})
             </button>
             <button
+              aria-pressed={typeFilter === 'conflict'}
               onClick={() => setTypeFilter('conflict')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 typeFilter === 'conflict'
@@ -343,6 +345,7 @@ export function FindingsAndChecksView({
               Policy Conflict ({conflictCount})
             </button>
             <button
+              aria-pressed={typeFilter === 'missing'}
               onClick={() => setTypeFilter('missing')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 typeFilter === 'missing'
@@ -353,6 +356,7 @@ export function FindingsAndChecksView({
               Missing Evidence ({missingCount})
             </button>
             <button
+              aria-pressed={typeFilter === 'check'}
               onClick={() => setTypeFilter('check')}
               className={`px-2.5 py-1 rounded transition-colors ${
                 typeFilter === 'check'
@@ -370,6 +374,7 @@ export function FindingsAndChecksView({
           <div className="flex items-center gap-1.5 text-body-sm font-body-sm text-secondary">
             <span>Status:</span>
             <select
+              aria-label="Filter findings by review status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="h-7 text-label-sm font-label-sm bg-surface-container-lowest border border-surface-container-highest rounded px-2 py-0 text-on-surface focus:outline-none"
@@ -389,6 +394,7 @@ export function FindingsAndChecksView({
         <div className="flex items-center gap-2">
           <div className="relative w-48">
             <input
+              aria-label="Search findings"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-7 pl-7 pr-2 text-label-sm font-label-sm bg-surface border border-surface-container-highest rounded text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
@@ -396,16 +402,16 @@ export function FindingsAndChecksView({
               type="text"
             />
             <span className="absolute inset-y-0 left-2 flex items-center pointer-events-none text-secondary">
-              <span className="material-symbols-outlined text-[14px]">filter_list</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[14px]">filter_list</span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Master-Detail Inspection Workspace Split */}
-      <div className="grid grid-cols-12 gap-4 flex-1 pb-6 items-start">
+      <div className="grid grid-cols-12 gap-5 pb-6 items-start">
         {/* Master Table (Left 5 Cols) */}
-        <section className="col-span-12 xl:col-span-5 flex flex-col bg-surface-container-lowest rounded-lg border border-surface-container-highest overflow-hidden">
+        <section aria-label="Identified findings" className="col-span-12 xl:col-span-5 min-w-0 flex flex-col ct-panel overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between">
             <span className="text-label-sm font-label-sm font-semibold uppercase text-secondary">
               Identified Findings ({filteredFindings.length})
@@ -424,11 +430,20 @@ export function FindingsAndChecksView({
                 return (
                   <div
                     key={finding.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setSelectedFindingId(finding.id);
+                      }
+                    }}
                     onClick={() => setSelectedFindingId(finding.id)}
                     className={`p-3.5 cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-surface-container-low border-l-4 border-l-primary-container'
-                        : 'bg-surface-container-lowest hover:bg-surface border-l-4 border-l-transparent'
+                        ? 'bg-accent-bg/60 border-l border-l-primary'
+                        : 'bg-surface hover:bg-background border-l border-l-transparent'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -469,7 +484,7 @@ export function FindingsAndChecksView({
 
                     <div className="mt-2.5 pt-2 border-t border-surface-container-highest flex items-center justify-between text-body-sm font-body-sm text-secondary text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[14px] text-amber-600">
+                        <span aria-hidden="true" className="material-symbols-outlined text-[14px] text-amber-600">
                           inventory_2
                         </span>
                         <span className="text-code-sm font-code-sm truncate max-w-[200px]">
@@ -479,7 +494,7 @@ export function FindingsAndChecksView({
                       {isSelected ? (
                         <span className="text-label-sm font-label-sm text-primary font-semibold flex items-center">
                           Active Focus
-                          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                          <span aria-hidden="true" className="material-symbols-outlined text-[14px]">chevron_right</span>
                         </span>
                       ) : (
                         <span className="text-label-sm font-label-sm text-secondary hover:text-on-surface">
@@ -495,11 +510,11 @@ export function FindingsAndChecksView({
         </section>
 
         {/* Detail Inspector Canvas (Right 7 Cols) */}
-        <section className="col-span-12 xl:col-span-7 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs flex flex-col overflow-hidden">
+        <section aria-label="Finding inspector" className="col-span-12 xl:col-span-7 min-w-0 ct-panel flex flex-col overflow-hidden">
           {/* Inspector Header */}
-          <div className="px-5 py-4 border-b border-surface-container-highest bg-surface-container-lowest flex items-start justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-border flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-2 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed text-code-sm font-code-sm font-semibold">
                   {selectedFinding.code}
                 </span>
@@ -517,18 +532,18 @@ export function FindingsAndChecksView({
                 onClick={() => onSelectClaimForReview?.(selectedFinding.relatedQuestionCode)}
                 className="h-8 px-2.5 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest text-label-sm font-label-sm flex items-center gap-1 shrink-0"
               >
-                <span className="material-symbols-outlined text-[15px]">open_in_new</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[15px]">open_in_new</span>
                 <span>Open Related Question ({selectedFinding.relatedQuestionCode})</span>
               </button>
             )}
           </div>
 
           {/* Inspector Body Content */}
-          <div className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[calc(100vh-280px)] custom-scrollbar">
+          <div className="p-5 flex flex-col gap-5 break-words">
             {/* Context / Question Requirement Card */}
-            <div className="p-3.5 bg-surface rounded-lg border border-surface-container-highest flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="pb-4 border-b border-border flex flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-code-sm font-code-sm font-semibold text-primary">
                     QUESTION CONTEXT
                   </span>
@@ -547,7 +562,7 @@ export function FindingsAndChecksView({
 
             {/* Flag Callout Explanation Banner */}
             <div className="p-3.5 bg-[#fff7ed] border border-[#ffedd5] rounded-lg flex items-start gap-3">
-              <span className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">
+              <span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">
                 report_problem
               </span>
               <div className="flex flex-col gap-0.5">
@@ -581,7 +596,7 @@ export function FindingsAndChecksView({
                         {evidence.lineRange && <span>Lines {evidence.lineRange.start}-{evidence.lineRange.end}</span>}
                         {evidence.commitSha && <span>Commit {evidence.commitSha.slice(0, 12)}</span>}
                       </div>
-                      <p className="border-l-2 border-primary bg-surface-container-low/50 px-2.5 py-2 text-xs text-on-surface whitespace-pre-wrap leading-relaxed">
+                      <p className="border-l border-primary bg-surface-container-low/50 px-2.5 py-2 text-xs text-on-surface whitespace-pre-wrap leading-relaxed break-words">
                         {evidence.excerpt}
                       </p>
                     </div>
@@ -606,7 +621,7 @@ export function FindingsAndChecksView({
                 <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg overflow-hidden flex flex-col">
                   <div className="px-3 py-2 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[15px] text-secondary">
+                      <span aria-hidden="true" className="material-symbols-outlined text-[15px] text-secondary">
                         article
                       </span>
                       <span className="text-label-sm font-label-sm font-semibold text-on-surface text-xs">
@@ -621,7 +636,7 @@ export function FindingsAndChecksView({
                     <p className="text-[11px] text-secondary font-medium">
                       {selectedFinding.policyCitation.section}
                     </p>
-                    <div className="p-2.5 bg-surface border-l-2 border-primary rounded text-on-surface text-xs">
+                    <div className="p-2.5 bg-background border-l border-border text-on-surface text-xs">
                       <mark className="bg-[#ea580c1a] text-on-surface border-b border-primary-container px-0.5 font-medium">
                         {selectedFinding.policyCitation.quote}
                       </mark>
@@ -636,7 +651,7 @@ export function FindingsAndChecksView({
                 <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg overflow-hidden flex flex-col">
                   <div className="px-3 py-2 bg-surface-container-low border-b border-surface-container-highest flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[15px] text-primary">
+                      <span aria-hidden="true" className="material-symbols-outlined text-[15px] text-primary">
                         code
                       </span>
                       <span className="text-label-sm font-label-sm font-semibold text-on-surface text-xs">
@@ -648,13 +663,16 @@ export function FindingsAndChecksView({
                     </span>
                   </div>
 
-                  <div className="p-3 bg-[#0f172a] text-[#f8fafc] font-code-sm text-[11px] overflow-x-auto flex flex-col leading-5">
+                  <div tabIndex={0} role="region" aria-label="Finding implementation excerpt" className="ct-code p-3 overflow-x-auto flex flex-col leading-5">
+                    {selectedFinding.codeEvidence.lines.length === 0 && (
+                      <p className="text-xs text-slate-300">No repository code excerpt is available for this finding.</p>
+                    )}
                     {selectedFinding.codeEvidence.lines.map((line, idx) => (
                       <div
                         key={idx}
                         className={
                           line.isHighlighted
-                            ? 'bg-[#c2410c33] border-l-2 border-primary text-[#ffdbce] px-1 py-0.5 rounded-sm my-0.5'
+                            ? 'bg-[#c2410c33] border-l border-primary text-[#ffdbce] px-1 py-0.5 rounded-sm my-0.5'
                             : 'text-[#94a3b8]'
                         }
                       >
@@ -667,7 +685,7 @@ export function FindingsAndChecksView({
             </div>
 
             {/* Deep Analysis */}
-            <div className="bg-surface p-3.5 rounded-lg border border-surface-container-highest flex flex-col gap-1.5">
+            <div className="pt-4 border-t border-border flex flex-col gap-1.5">
               <span className="text-label-sm font-label-sm uppercase font-semibold text-secondary text-xs">
                 Relationship Analysis
               </span>
@@ -702,32 +720,32 @@ export function FindingsAndChecksView({
 
           {/* Inspector Action Footer */}
           <div className="px-5 py-3.5 bg-surface-container-lowest border-t border-surface-container-highest flex flex-wrap items-center justify-between gap-3 mt-auto">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full">
               <input
                 value={reviewNotes}
                 onChange={(event) => setReviewNotes(event.target.value)}
                 placeholder="Reviewer note or resolution reason"
                 aria-label="Reviewer note or resolution reason"
-                className="h-8 w-56 px-2.5 text-xs border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+                className="min-h-9 min-w-0 w-full px-2.5 text-xs border border-border rounded-md bg-surface text-on-surface placeholder:text-secondary focus:border-on-surface"
               />
               <button
                 onClick={() => handleMarkReviewed(selectedFinding.id)}
                 className="h-8 px-3 rounded bg-surface hover:bg-surface-container-low text-on-surface border border-surface-container-highest font-label-md text-label-md flex items-center gap-1.5 transition-colors"
               >
-                <span className="material-symbols-outlined text-[15px] text-emerald-600">done</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[15px] text-emerald-600">done</span>
                 <span>Start Review</span>
               </button>
               <button
                 onClick={() => handleMarkResolved(selectedFinding.id)}
-                className="h-8 px-3.5 rounded bg-primary-container hover:bg-[#ea580c] text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm border border-[#9a3412] transition-colors"
+                className="min-h-9 px-3.5 rounded-md bg-primary hover:bg-accent-hover text-on-primary text-xs font-medium flex items-center gap-1.5 transition-colors"
               >
-                <span className="material-symbols-outlined text-[15px]">verified</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[15px]">verified</span>
                 <span>Mark Resolved</span>
               </button>
             </div>
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

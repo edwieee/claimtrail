@@ -234,19 +234,19 @@ export function QuestionReviewWorkspace({
       {/* ========================================================================= */}
       {/* TOP APP BAR (STITCH REVIEW NAVIGATION)                                   */}
       {/* ========================================================================= */}
-      <header className="flex items-center justify-between w-full h-14 px-6 bg-surface-container-lowest border-b border-surface-container-highest z-20 shrink-0">
+      <header className="flex items-center justify-between w-full h-14 px-6 bg-surface border-b border-border z-20 shrink-0">
         <div className="flex items-center gap-3">
           {/* Question Drawer Toggle Button */}
           <button
             onClick={() => setIsQuestionDrawerOpen(!isQuestionDrawerOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm text-on-surface bg-surface-container-low hover:bg-surface-container border border-surface-container-highest rounded transition-colors text-[12px]"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-label-sm font-label-sm text-on-surface bg-background hover:bg-surface-container border border-border rounded transition-colors text-[12px]"
             title="Toggle Questions List"
           >
             <span className="material-symbols-outlined text-[16px] text-secondary">
               {isQuestionDrawerOpen ? 'close' : 'menu_open'}
             </span>
             <span className="font-medium">Questions List</span>
-            <span className="text-[10px] font-code-sm px-1 py-0.2 rounded bg-surface-container-lowest text-secondary border border-surface-container-highest/60">
+            <span className="text-[10px] font-code-sm px-1 py-0.2 rounded bg-surface text-secondary border border-border/60">
               {claims.length}
             </span>
           </button>
@@ -273,16 +273,16 @@ export function QuestionReviewWorkspace({
 
         {/* Stepper Navigation */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded border border-surface-container-highest bg-surface-container-lowest text-label-sm font-label-sm text-secondary">
+          <div className="flex items-center rounded border border-border bg-surface text-label-sm font-label-sm text-secondary">
             <button
               onClick={handlePrev}
               disabled={activeIndex <= 0}
-              className="px-2.5 py-1 hover:text-on-surface hover:bg-surface-container-low border-r border-surface-container-highest flex items-center gap-1 transition-colors text-[12px] disabled:opacity-40"
+              className="px-2.5 py-1 hover:text-on-surface hover:bg-background border-r border-border flex items-center gap-1 transition-colors text-[12px] disabled:opacity-40"
             >
               <span className="material-symbols-outlined text-[15px]">chevron_left</span>
               <span className="hidden sm:inline">Prev</span>
             </button>
-            <div className="px-3 py-1 font-code-sm text-[11px] text-on-surface bg-surface-container-lowest flex items-center gap-1.5">
+            <div className="px-3 py-1 font-code-sm text-[11px] text-on-surface bg-surface flex items-center gap-1.5">
               <span className="text-secondary">Question</span>
               <span className="text-on-surface font-semibold">{activeIndex >= 0 ? activeIndex + 1 : 1}</span>
               <span className="text-secondary/60">of</span>
@@ -291,7 +291,7 @@ export function QuestionReviewWorkspace({
             <button
               onClick={handleNext}
               disabled={activeIndex >= claims.length - 1}
-              className="px-2.5 py-1 hover:text-on-surface hover:bg-surface-container-low border-l border-surface-container-highest flex items-center gap-1 transition-colors text-[12px] disabled:opacity-40"
+              className="px-2.5 py-1 hover:text-on-surface hover:bg-background border-l border-border flex items-center gap-1 transition-colors text-[12px] disabled:opacity-40"
             >
               <span className="hidden sm:inline">Next</span>
               <span className="material-symbols-outlined text-[15px]">chevron_right</span>
@@ -302,7 +302,7 @@ export function QuestionReviewWorkspace({
 
           <button
             onClick={onBackToQuestionnaire}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-label-sm font-label-sm text-on-surface bg-surface-container-low hover:bg-surface-container border border-surface-container-highest rounded font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-label-sm font-label-sm text-on-surface bg-background hover:bg-surface-container border border-border rounded font-medium transition-colors"
           >
             <span className="material-symbols-outlined text-[15px]">arrow_back</span>
             <span>Back to Catalog</span>
@@ -316,8 +316,8 @@ export function QuestionReviewWorkspace({
       <div className="flex-1 flex overflow-hidden relative">
         {/* Slide-out Questions List Drawer */}
         {isQuestionDrawerOpen && (
-          <aside className="w-80 shrink-0 bg-surface-container-lowest border-r border-surface-container-highest flex flex-col h-full z-10 shadow-lg animate-in slide-in-from-left duration-200">
-            <div className="p-3 border-b border-surface-container-highest flex items-center justify-between">
+          <aside className="w-80 shrink-0 bg-surface border-r border-border flex flex-col h-full z-10  animate-in slide-in-from-left duration-200">
+            <div className="p-3 border-b border-border flex items-center justify-between">
               <span className="font-label-md font-semibold text-on-surface text-xs">
                 Questionnaire Catalog ({claims.length})
               </span>
@@ -328,7 +328,7 @@ export function QuestionReviewWorkspace({
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
             </div>
-            <div className="p-2 border-b border-surface-container-highest">
+            <div className="p-2 border-b border-border">
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary">
                   search
@@ -338,7 +338,7 @@ export function QuestionReviewWorkspace({
                   placeholder="Filter questions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-7 pr-2 py-1 text-xs bg-surface-container-low border border-surface-container-highest rounded text-on-surface placeholder:text-secondary focus:outline-none"
+                  className="w-full pl-7 pr-2 py-1 text-xs bg-background border border-border rounded text-on-surface placeholder:text-secondary focus:outline-none"
                 />
               </div>
             </div>
@@ -354,8 +354,8 @@ export function QuestionReviewWorkspace({
                       setIsQuestionDrawerOpen(false);
                     }}
                     className={`w-full p-3 text-left transition-colors flex flex-col gap-1 ${isSelected
-                        ? 'bg-surface-container-low border-l-2 border-primary-container'
-                        : 'hover:bg-surface-container-low/40'
+                        ? 'bg-background border-l-2 border-primary'
+                        : 'hover:bg-background/40'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -394,16 +394,16 @@ export function QuestionReviewWorkspace({
         <main className="flex-1 overflow-y-auto bg-background custom-scrollbar">
           <div className="max-w-6xl w-full mx-auto px-8 py-6 flex flex-col gap-6">
             {/* CENTER TOP ANCHOR: QUESTION & SYNTHESIS BANNER */}
-            <section className="bg-surface-container-lowest border border-surface-container-highest/70 rounded-lg shadow-sm overflow-hidden">
+            <section className="bg-surface border border-border/70 rounded-lg  overflow-hidden">
               {/* Question Metadata Header */}
-              <div className="px-6 py-4 border-b border-surface-container-highest/60 bg-surface-container-low/30">
+              <div className="px-6 py-4 border-b border-border/60 bg-background/30">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-code-sm text-[11px] font-semibold text-primary px-2 py-0.5 bg-surface-container-low rounded border border-surface-container-high">
+                    <span className="font-code-sm text-[11px] font-semibold text-primary px-2 py-0.5 bg-background rounded border border-border">
                       {activeClaim.code} · {activeClaim.category.toUpperCase()}
                     </span>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-code-sm text-[11px] bg-surface-container-low text-secondary border border-surface-container-highest/60 font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-code-sm text-[11px] bg-background text-secondary border border-border/60 font-medium">
                     <span className="material-symbols-outlined text-[13px] text-secondary">
                       verified_user
                     </span>
@@ -420,7 +420,7 @@ export function QuestionReviewWorkspace({
               </div>
 
               {/* AI Draft Status Bar */}
-              <div className="flex items-center justify-between px-6 py-2.5 bg-surface-container-low/50 border-b border-surface-container-highest/40 text-[12px]">
+              <div className="flex items-center justify-between px-6 py-2.5 bg-background/50 border-b border-border/40 text-[12px]">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 font-medium text-amber-950">
                     <span className={`w-1.5 h-1.5 rounded-full ${currentStatus === 'approved' ? 'bg-emerald-600' : 'bg-amber-500'}`} />
@@ -457,7 +457,7 @@ export function QuestionReviewWorkspace({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handleCopyStatement}
-                      className="p-1 text-secondary hover:text-on-surface hover:bg-surface-container-low rounded transition-colors"
+                      className="p-1 text-secondary hover:text-on-surface hover:bg-background rounded transition-colors"
                       title="Copy Text"
                     >
                       <span className="material-symbols-outlined text-[15px]">content_copy</span>
@@ -471,7 +471,7 @@ export function QuestionReviewWorkspace({
                       value={editedAnswer}
                       onChange={(e) => setEditedAnswer(e.target.value)}
                       rows={6}
-                      className="w-full p-3 text-xs font-body-md bg-surface-container-lowest border border-surface-container-highest rounded text-on-surface focus:outline-none focus:border-on-surface leading-relaxed"
+                      className="w-full p-3 text-xs font-body-md bg-surface border border-border rounded text-on-surface focus:outline-none focus:border-on-surface leading-relaxed"
                     />
                     <div className="flex items-center justify-end gap-2">
                       <button
@@ -479,13 +479,13 @@ export function QuestionReviewWorkspace({
                           setEditedAnswer(currentAnswer);
                           setIsEditing(false);
                         }}
-                        className="px-3 py-1 text-xs rounded border border-surface-container-highest bg-surface-container-lowest text-secondary hover:text-on-surface"
+                        className="px-3 py-1 text-xs rounded border border-border bg-surface text-secondary hover:text-on-surface"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveDraft}
-                        className="px-3 py-1 text-xs rounded bg-primary-container text-on-primary font-medium"
+                        className="px-3 py-1 text-xs rounded bg-primary text-on-primary font-medium"
                       >
                         Save Draft
                       </button>
@@ -509,13 +509,13 @@ export function QuestionReviewWorkspace({
                     )}
                     <p>{currentAnswer}</p>
                     {activeClaim.answerDraftDetails && (
-                      <div className="space-y-2 border-t border-surface-container-highest pt-3 text-[11px]">
+                      <div className="space-y-2 border-t border-border pt-3 text-[11px]">
                         <p className="text-secondary"><span className="font-semibold text-on-surface">Evidence basis:</span> {activeClaim.answerDraftDetails.reasoningSummary}</p>
                         {activeClaim.answerDraftDetails.evidenceCitations.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="font-semibold text-on-surface">Validated citations</span>
                             {activeClaim.answerDraftDetails.evidenceCitations.map((citation) => (
-                              <div key={citation.evidenceId} className="rounded border border-surface-container-highest bg-surface-container-low/50 px-2.5 py-2">
+                              <div key={citation.evidenceId} className="rounded border border-border bg-background/50 px-2.5 py-2">
                                 <div className="flex flex-wrap gap-x-3 gap-y-1 font-code-sm text-secondary">
                                   <span>{citation.sourceName}</span>
                                   {citation.pageNumber !== undefined && <span>Page {citation.pageNumber}</span>}
@@ -556,7 +556,7 @@ export function QuestionReviewWorkspace({
                         ? 'bg-red-50 text-red-800 border-red-200'
                         : evidenceMapping?.retrievalState === 'mixed'
                           ? 'bg-amber-50 text-amber-800 border-amber-200'
-                          : 'bg-surface-container-low text-secondary border-surface-container-high'
+                          : 'bg-background text-secondary border-border'
                     }`}>
                     {isLoadingEvidence ? 'Retrieving...' : evidenceMapping?.retrievalState || 'insufficient'}
                   </span>
@@ -576,8 +576,8 @@ export function QuestionReviewWorkspace({
                 </button>
               </div>
 
-              <div className="mb-5 rounded-lg border border-surface-container-highest bg-surface-container-lowest shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-surface-container-highest bg-surface-container-low/40 flex items-center justify-between gap-3">
+              <div className="mb-5 rounded-lg border border-border bg-surface  overflow-hidden">
+                <div className="px-4 py-3 border-b border-border bg-background/40 flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-label-md font-semibold text-on-surface text-[13px]">Question-to-source matches</h2>
                     <p className="text-[11px] text-secondary mt-0.5">Lexical retrieval from ingested policy and repository content. Relevance is not proof.</p>
@@ -607,7 +607,7 @@ export function QuestionReviewWorkspace({
                           {item.lineRange && <span>Lines {item.lineRange.start}-{item.lineRange.end}</span>}
                           {item.commitSha && <span>Commit {item.commitSha.slice(0, 12)}</span>}
                         </div>
-                        <blockquote className="border-l-2 border-primary bg-surface-container-low/50 px-3 py-2 text-xs text-on-surface leading-relaxed whitespace-pre-wrap">
+                        <blockquote className="border-l-2 border-primary bg-background/50 px-3 py-2 text-xs text-on-surface leading-relaxed whitespace-pre-wrap">
                           {item.snippet}
                         </blockquote>
                         <p className="text-[11px] text-secondary">{item.explanation}</p>
@@ -629,10 +629,10 @@ export function QuestionReviewWorkspace({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
                 {/* LEFT CARD (50%): Code Repository Source */}
-                <div className="border border-surface-container-highest/70 rounded-lg bg-surface-container-lowest overflow-hidden flex flex-col justify-between shadow-sm">
+                <div className="border border-border/70 rounded-lg bg-surface overflow-hidden flex flex-col justify-between ">
                   <div>
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-container-highest/60 bg-surface-container-low/40">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/60 bg-background/40">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px] text-secondary">
                           code
@@ -647,11 +647,11 @@ export function QuestionReviewWorkspace({
                     </div>
 
                     {/* File path banner */}
-                    <div className="px-4 py-1.5 bg-surface-container-lowest border-b border-surface-container-highest/40 flex items-center justify-between">
+                    <div className="px-4 py-1.5 bg-surface border-b border-border/40 flex items-center justify-between">
                       <span className="font-code-sm text-[11px] text-secondary truncate max-w-[260px]">
                         {activeClaim.codeCitation?.filePath || activeClaim.primarySourcePath}
                       </span>
-                      <span className="font-code-sm text-[10px] text-secondary bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-high/60">
+                      <span className="font-code-sm text-[10px] text-secondary bg-background px-1.5 py-0.5 rounded border border-border/60">
                         AST Inspected
                       </span>
                     </div>
@@ -684,7 +684,7 @@ export function QuestionReviewWorkspace({
                   </div>
 
                   {/* Commit SHA footer */}
-                  <div className="px-4 py-2 bg-surface-container-lowest text-[11px] text-secondary flex items-center justify-between border-t border-surface-container-highest/40">
+                  <div className="px-4 py-2 bg-surface text-[11px] text-secondary flex items-center justify-between border-t border-border/40">
                     <span className="flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-[13px] text-emerald-600">
                         check_circle
@@ -700,10 +700,10 @@ export function QuestionReviewWorkspace({
                 </div>
 
                 {/* RIGHT CARD (50%): Security Policy Document & Automated Verification */}
-                <div className="border border-surface-container-highest/70 rounded-lg bg-surface-container-lowest overflow-hidden flex flex-col justify-between shadow-sm">
+                <div className="border border-border/70 rounded-lg bg-surface overflow-hidden flex flex-col justify-between ">
                   <div className="flex flex-col">
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-surface-container-highest/60 bg-surface-container-low/40">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/60 bg-background/40">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[16px] text-secondary">
                           picture_as_pdf
@@ -718,18 +718,18 @@ export function QuestionReviewWorkspace({
                     </div>
 
                     {/* Document File metadata */}
-                    <div className="px-4 py-1.5 bg-surface-container-lowest border-b border-surface-container-highest/40 flex items-center justify-between">
+                    <div className="px-4 py-1.5 bg-surface border-b border-border/40 flex items-center justify-between">
                       <span className="font-code-sm text-[11px] text-secondary truncate max-w-[280px]">
                         {activeClaim.policyCitation?.section || 'Section 3.2: Multi-Tenant Data Segregation'}
                       </span>
-                      <span className="font-code-sm text-[10px] text-secondary bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-high/60">
+                      <span className="font-code-sm text-[10px] text-secondary bg-background px-1.5 py-0.5 rounded border border-border/60">
                         Page {activeClaim.policyCitation?.page || 14}
                       </span>
                     </div>
 
                     {/* Policy Quote Section */}
-                    <div className="p-4 bg-surface-container-lowest font-body-sm text-[12px] leading-relaxed text-secondary border-b border-surface-container-highest/40 space-y-2">
-                      <div className="p-3 border-l-2 border-amber-500 bg-surface-container-low/40 text-on-surface text-[12px] leading-normal rounded-r">
+                    <div className="p-4 bg-surface font-body-sm text-[12px] leading-relaxed text-secondary border-b border-border/40 space-y-2">
+                      <div className="p-3 border-l-2 border-amber-500 bg-background/40 text-on-surface text-[12px] leading-normal rounded-r">
                         <p className="text-secondary italic">
                           &ldquo;{activeClaim.policyCitation?.quote || 'All data stores must enforce strict logical segregation.'}&rdquo;
                         </p>
@@ -740,7 +740,7 @@ export function QuestionReviewWorkspace({
                     </div>
 
                     {/* Automated Policy Verification Sub-section */}
-                    <div className="p-4 bg-surface-container-low/20 flex flex-col gap-1.5">
+                    <div className="p-4 bg-background/20 flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <span className={`material-symbols-outlined text-[16px] ${activeClaim.ruleCheck?.status === 'failed' ? 'text-red-600' : 'text-emerald-600'}`}>
@@ -766,7 +766,7 @@ export function QuestionReviewWorkspace({
                         <span className="font-code-sm text-secondary">
                           Confidence: {activeClaim.ruleCheck?.matchConfidence || 94.2}%
                         </span>
-                        <span className="font-code-sm bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-highest/60 text-secondary">
+                        <span className="font-code-sm bg-background px-1.5 py-0.5 rounded border border-border/60 text-secondary">
                           {activeClaim.ruleCheck?.ruleId || '#ENG-RLS-09'}
                         </span>
                       </div>
@@ -774,7 +774,7 @@ export function QuestionReviewWorkspace({
                   </div>
 
                   {/* Cryptographic Baseline Banner Footer */}
-                  <div className="px-4 py-2 rounded-b border-t border-surface-container-highest/40 text-[11px] text-secondary flex items-center gap-1.5 bg-surface-container-low/30">
+                  <div className="px-4 py-2 rounded-b border-t border-border/40 text-[11px] text-secondary flex items-center gap-1.5 bg-background/30">
                     <span className="material-symbols-outlined text-[13px] text-secondary">
                       lock
                     </span>
@@ -795,7 +795,7 @@ export function QuestionReviewWorkspace({
       {/* ========================================================================= */}
       {/* STICKY BOTTOM ACTION BAR                                                  */}
       {/* ========================================================================= */}
-      <footer className="sticky bottom-0 w-full bg-surface-container-lowest border-t border-surface-container-highest px-6 py-2.5 z-20 shadow-md shrink-0 space-y-2">
+      <footer className="sticky bottom-0 w-full bg-surface border-t border-border px-6 py-2.5 z-20  shrink-0 space-y-2">
         {/* Unresolved Issues Override Checkbox if applicable */}
         {hasUnresolvedIssues && (
           <div className="flex items-center justify-between p-2 rounded bg-amber-50 border border-amber-300 text-xs text-amber-950">
@@ -820,7 +820,7 @@ export function QuestionReviewWorkspace({
           <div className="flex flex-col gap-0.5 text-secondary text-[11px]">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[14px] text-secondary">commit</span>
-              <span>Target: <code className="font-code-sm text-on-surface font-semibold bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-highest/60">{activeClaim.primarySourcePath}</code></span>
+              <span>Target: <code className="font-code-sm text-on-surface font-semibold bg-background px-1.5 py-0.5 rounded border border-border/60">{activeClaim.primarySourcePath}</code></span>
               <span className="text-secondary/40">•</span>
               <span>Status: <strong className="text-on-surface font-medium capitalize">{currentStatus}</strong></span>
               <span className="text-secondary/40">•</span>
@@ -855,7 +855,7 @@ export function QuestionReviewWorkspace({
 
             <button
               onClick={handleMarkNeedsReview}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-label-sm font-medium text-secondary hover:text-amber-900 hover:bg-amber-50 rounded border border-surface-container-highest/60 transition-colors text-[11px]"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-label-sm font-medium text-secondary hover:text-amber-900 hover:bg-amber-50 rounded border border-border/60 transition-colors text-[11px]"
             >
               <span className="material-symbols-outlined text-[14px]">flag</span>
               <span>Needs Review</span>
@@ -863,7 +863,7 @@ export function QuestionReviewWorkspace({
 
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-1 px-3 py-1.5 text-label-sm font-medium text-on-surface bg-surface-container-lowest border border-surface-container-highest hover:bg-surface-container-low rounded transition-colors text-[11px]"
+              className="flex items-center gap-1 px-3 py-1.5 text-label-sm font-medium text-on-surface bg-surface border border-border hover:bg-background rounded transition-colors text-[11px]"
             >
               <span className="material-symbols-outlined text-secondary text-[14px]">edit</span>
               <span>{isEditing ? 'Close Editor' : 'Edit Answer'}</span>
@@ -875,14 +875,14 @@ export function QuestionReviewWorkspace({
                 onChange={(event) => setReviewerName(event.target.value)}
                 placeholder="Reviewer Name"
                 aria-label="Reviewer Name"
-                className="h-7 w-32 px-2 text-[11px] border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+                className="h-7 w-32 px-2 text-[11px] border border-border rounded bg-surface text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
               />
               <input
                 value={reviewReason}
                 onChange={(event) => setReviewReason(event.target.value)}
                 placeholder="Note / Override justification"
                 aria-label="Approval or rejection note"
-                className="h-7 w-44 px-2 text-[11px] border border-surface-container-highest rounded bg-surface-container-lowest text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
+                className="h-7 w-44 px-2 text-[11px] border border-border rounded bg-surface text-on-surface placeholder:text-secondary focus:outline-none focus:border-on-surface"
               />
             </div>
 
@@ -896,7 +896,7 @@ export function QuestionReviewWorkspace({
 
             <button
               onClick={handleApprove}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-label-sm font-semibold text-on-primary bg-primary-container hover:bg-[#ea580c] rounded transition-colors text-[11px] shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-label-sm font-semibold text-on-primary bg-primary hover:bg-accent-hover rounded transition-colors text-[11px] "
             >
               <span className="material-symbols-outlined text-[15px]">check_circle</span>
               <span>Approve Answer</span>

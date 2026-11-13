@@ -115,21 +115,37 @@ export function OverviewDashboard({
         {/* ================================================================= */}
         {/* PAGE HEADER & ASSESSMENT CONTEXT                                  */}
         {/* ================================================================= */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
-          <div>
-            <div className="flex items-center gap-2">
+        <div className="relative overflow-hidden rounded-lg border border-border bg-surface px-6 py-8 md:px-8">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.16]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #9ca3af 1px, transparent 1px)',
+              backgroundSize: '14px 14px',
+              maskImage: "url('/world-map.svg')",
+              WebkitMaskImage: "url('/world-map.svg')",
+              maskSize: 'contain',
+              WebkitMaskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              WebkitMaskRepeat: 'no-repeat',
+              maskPosition: 'center',
+              WebkitMaskPosition: 'center',
+            }}
+          />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
               <h1 className="text-headline-lg font-headline-lg font-bold text-on-surface tracking-tight">
-                Final Review &amp; Approval Dashboard
+                Security answers.<br />
+                Grounded in evidence.
               </h1>
-              <span className="bg-background text-secondary border border-border font-code-sm text-code-sm px-2 py-0.5 rounded">
-                STEP 7 FINAL AUDIT
-              </span>
+              <p className="text-body-md font-body-md text-secondary mt-2 max-w-[62ch]">
+                Connect policies, code, and security checks to create traceable security questionnaire answers.
+              </p>
             </div>
-            <p className="text-body-md font-body-md text-secondary mt-0.5">
-              Review questionnaire answers against verified evidence, manage reviewer approvals, and export completed workbooks.
-            </p>
           </div>
-
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
+          <div />
           <div className="flex items-center gap-3">
             <button
               onClick={onNewAssessment}

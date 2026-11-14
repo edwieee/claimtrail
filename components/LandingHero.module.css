@@ -26,8 +26,7 @@
   background-image: url('/images/claimtrail-hero-artwork.png');
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0.5;
+  background-position: center 48%;
 }
 
 /* A quiet clearing in the map, not a surface behind the heading. */
@@ -36,7 +35,7 @@
   z-index: -1;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 48% 48% at 50% 48%, var(--landing-background) 30%, transparent 100%);
+  background: radial-gradient(ellipse 42% 40% at 50% 48%, var(--landing-background) 18%, transparent 100%);
 }
 
 .header {
@@ -172,8 +171,9 @@
   .mobileMenu .cta { margin-top: 8px; }
   .hero { padding: 100px 20px; }
   .supporting { max-width: 340px; margin-top: 22px; }
-  .map { background-position: 52% center; opacity: 0.36; }
-  .readability { background: radial-gradient(ellipse 90% 38% at 50% 48%, var(--landing-background) 25%, transparent 100%); }
+  /* Keep the whole map legible in portrait instead of magnifying a centre slice. */
+  .map { background-size: 126% auto; background-position: center 50%; }
+  .readability { background: radial-gradient(ellipse 94% 28% at 50% 48%, var(--landing-background) 28%, transparent 100%); }
 }
 
 @media (prefers-reduced-motion: reduce) { .cta { transition: none; } }

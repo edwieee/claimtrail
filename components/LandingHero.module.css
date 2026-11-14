@@ -24,7 +24,7 @@
   inset: 0;
   pointer-events: none;
   background-image: url('/images/claimtrail-hero-background.png');
-  background-size: cover;
+  background-size: 100% auto;
   background-repeat: no-repeat;
   background-position: center;
   opacity: 1;
@@ -36,7 +36,7 @@
   z-index: -1;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 44% 42% at 50% 47%, var(--landing-background) 24%, transparent 100%);
+  background: radial-gradient(ellipse 44% 42% at 50% 47%, var(--landing-background) 12%, transparent 100%);
 }
 
 .header {
@@ -130,8 +130,8 @@
 
 .headline {
   margin: 0;
-  font-size: clamp(1.75rem, 6.2vw, 5rem);
-  line-height: 1.09;
+  font-size: clamp(1.75rem, 5.4vw, 3.75rem);
+  line-height: 1.12;
   font-weight: 500;
   letter-spacing: -0.04em;
 }
@@ -140,14 +140,14 @@
 .headline span + span { color: #626873; }
 .supporting {
   max-width: 540px;
-  margin: 26px auto 0;
+  margin: 18px auto 0;
   font-size: clamp(15px, 1.3vw, 17px);
   line-height: 1.75;
   color: var(--secondary);
   text-wrap: pretty;
 }
 
-.heroCta { min-height: 48px; margin-top: 32px; padding-inline: 23px; font-size: 14px; }
+.heroCta { min-height: 48px; margin-top: 24px; padding-inline: 23px; font-size: 14px; }
 .mobileMenu { display: none; }
 .skipLink { position: absolute; z-index: 10; top: 12px; left: 12px; padding: 10px 16px; background: white; transform: translateY(-200%); }
 .skipLink:focus { transform: translateY(0); }

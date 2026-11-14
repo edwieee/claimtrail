@@ -58,12 +58,12 @@ export async function parseSecurityPolicyPdf(
         pageNumber: pageNum,
         sectionTitle: `${sectionTitle} (p. ${pageNum})`,
         text: pageText,
-        confidence: 99.0,
+        confidence: 100,
       });
     }
   } catch (err: any) {
-    console.warn('pdfjs parse warning (using text fallback):', err?.message);
-    // Robust fallback: extract text streams from PDF buffer directly
+    console.warn('pdfjs parse warning (trying embedded text fallback):', err?.message);
+    // Best-effort extraction of text that is actually present in simple PDF streams.
     const rawString = buffer.toString('utf-8', 0, Math.min(buffer.length, 500000));
     const textMatches: string[] = [];
     const parenRegex = /\(([^()]{3,})\)\s*T[jJ]/g;
@@ -73,26 +73,16 @@ export async function parseSecurityPolicyPdf(
       if (clean.length > 1) textMatches.push(clean);
     }
 
-    const fallbackText = textMatches.join(' ') || 'Information Security Policy documentation';
-    fullText = fallbackText;
-    pagesCount = 2;
+    const fallbackText = textMatches.join(' ').replace(/\s+/g, ' ').trim();
+    if (fallbackText.length >= 20) {
+      fullText = fallbackText;
+      pagesCount = 1;
+      chunks.push({ id: 'chunk-fallback-1', pageNumber: 1, sectionTitle: 'Embedded PDF text', text: fallbackText, confidence: 70 });
+    }
+  }
 
-    chunks.push(
-      {
-        id: 'chunk-page-1',
-        pageNumber: 1,
-        sectionTitle: 'Section 3.1: Identity & Access Management (IAM)',
-        text: 'Multi-Factor Authentication (MFA) is strictly required for all administrative console and CLI sessions.',
-        confidence: 95.0,
-      },
-      {
-        id: 'chunk-page-2',
-        pageNumber: 2,
-        sectionTitle: 'Section 4.1: Cryptographic Key Management',
-        text: 'Customer master keys (CMKs) configured in AWS Key Management Service (KMS) must automatically rotate at an interval not exceeding 365 calendar days.',
-        confidence: 95.0,
-      }
-    );
+  if (chunks.length === 0 || !fullText.trim()) {
+    throw new Error('No extractable text was found in this PDF. Upload a text-based policy PDF; scanned documents require OCR before upload.');
   }
 
   return {

@@ -23,7 +23,7 @@ export function ExportsView({
   checkResults = [],
   sources = [],
   exportHistory = [],
-  assessmentName = 'AcmeCorp Enterprise Security 2026',
+  assessmentName = '',
   onShowToast,
   onNavigateToQuestionnaire,
   onExportGenerated,
@@ -56,6 +56,7 @@ export function ExportsView({
   const staleCount = claims.filter((claim) => claim.reviewStatus === 'stale').length;
   const insufficientCount = claims.filter((claim) => claim.answerDraftDetails?.evidenceStatus === 'insufficient_evidence').length;
   const unresolvedFindingCount = findings.filter((finding) => !['resolved', 'accepted_risk', 'false_positive'].includes(finding.reviewStatus || '')).length;
+  const evidenceSourceCount = sources.filter((source) => source.type === 'pdf' || source.type === 'repo').length;
   const readinessBlocked = claims.length === 0 || draftCount > 0 || rejectedCount > 0 || staleCount > 0 || insufficientCount > 0;
 
   const readinessPercent = useMemo(() => {
@@ -64,6 +65,10 @@ export function ExportsView({
   }, [claims.length, approvedCount]);
 
   const handleExportWorkbook = async () => {
+    if (claims.length === 0) {
+      onShowToast('Upload a questionnaire before generating an export.', 'warning');
+      return;
+    }
     setIsExporting(true);
     onShowToast('Generating completed workbook with cryptographic evidence appendix...', 'info');
 
@@ -123,7 +128,7 @@ export function ExportsView({
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportWorkbook}
-            disabled={isExporting}
+            disabled={isExporting || claims.length === 0 || !includeXlsx}
             className="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-accent-hover transition-all  flex items-center gap-2 border border-[#9A3412] disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[18px]">
@@ -147,14 +152,14 @@ export function ExportsView({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-headline-sm text-headline-sm font-semibold text-on-surface">
-                    {assessmentName}
+                    {assessmentName || 'No assessment selected'}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-medium font-code-sm">
+                  {claims.length > 0 && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-medium font-code-sm">
                     <span className="w-1 h-1 rounded-full bg-emerald-600" /> Origin Verified
-                  </span>
+                  </span>}
                 </div>
                 <p className="text-code-sm font-code-sm text-secondary mt-0.5">
-                  {claims.length} Extracted Questions • Genuine ExcelJS Workbook Generator
+                  {claims.length > 0 ? `${claims.length} extracted questions • Original workbook retained` : 'Upload a questionnaire to enable exports'}
                 </p>
               </div>
             </div>
@@ -228,7 +233,7 @@ export function ExportsView({
                   Package Configuration &amp; Cryptographic Integrity
                 </h3>
               </div>
-              <span className="text-code-sm font-code-sm text-secondary">FIPS-140-3 Standard</span>
+              <span className="text-code-sm font-code-sm text-secondary">SHA-256 evidence manifest</span>
             </div>
 
             <div className="space-y-3">
@@ -330,8 +335,8 @@ export function ExportsView({
               {/* Item 1 */}
               <div className="p-2.5 bg-surface rounded border border-border flex items-center justify-between">
                 <div className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
-                    <span className="material-symbols-outlined text-[14px]">check</span>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${claims.length > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-secondary'}`}>
+                    <span className="material-symbols-outlined text-[14px]">{claims.length > 0 ? 'check' : 'horizontal_rule'}</span>
                   </div>
                   <div>
                     <span className="text-body-sm font-medium text-on-surface block text-xs">
@@ -342,36 +347,36 @@ export function ExportsView({
                     </span>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded text-[10.5px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Complete
+                <span className={`px-2 py-0.5 rounded text-[10.5px] font-medium border ${claims.length > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-secondary border-border'}`}>
+                  {claims.length > 0 ? 'Complete' : 'Not started'}
                 </span>
               </div>
 
               {/* Item 2 */}
               <div className="p-2.5 bg-surface rounded border border-border flex items-center justify-between">
                 <div className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
-                    <span className="material-symbols-outlined text-[14px]">check</span>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${evidenceSourceCount > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-secondary'}`}>
+                    <span className="material-symbols-outlined text-[14px]">{evidenceSourceCount > 0 ? 'check' : 'horizontal_rule'}</span>
                   </div>
                   <div>
                     <span className="text-body-sm font-medium text-on-surface block text-xs">
                       2. Evidence Sources Connected
                     </span>
                     <span className="text-[11px] text-secondary font-code-sm">
-                      {sources.filter((source) => source.type === 'pdf' || source.type === 'repo').length} policy/repository sources available · {checkResults.length} checks recorded
+                      {evidenceSourceCount} policy/repository sources available · {checkResults.length} checks recorded
                     </span>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded text-[10.5px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Complete
+                <span className={`px-2 py-0.5 rounded text-[10.5px] font-medium border ${evidenceSourceCount > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-secondary border-border'}`}>
+                  {evidenceSourceCount > 0 ? 'Complete' : 'Not started'}
                 </span>
               </div>
 
               {/* Item 3 */}
               <div className="p-2.5 bg-amber-50/40 rounded border border-amber-200/90 flex items-center justify-between">
                 <div className="flex items-start gap-2.5">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${approvedCount === claims.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
-                    <span className="material-symbols-outlined text-[14px]">{approvedCount === claims.length ? 'check' : 'priority_high'}</span>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${claims.length > 0 && approvedCount === claims.length ? 'bg-emerald-100 text-emerald-700' : claims.length === 0 ? 'bg-slate-100 text-secondary' : 'bg-amber-100 text-amber-800'}`}>
+                    <span className="material-symbols-outlined text-[14px]">{claims.length > 0 && approvedCount === claims.length ? 'check' : 'priority_high'}</span>
                   </div>
                   <div>
                     <span className="text-body-sm font-medium text-on-surface block text-xs">
@@ -383,8 +388,8 @@ export function ExportsView({
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className={`px-2 py-0.5 rounded text-[10.5px] font-medium border ${approvedCount === claims.length ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-100 text-amber-900 border-amber-300'}`}>
-                    {approvedCount === claims.length ? 'Complete' : 'Needs Attention'}
+                  <span className={`px-2 py-0.5 rounded text-[10.5px] font-medium border ${claims.length > 0 && approvedCount === claims.length ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : claims.length === 0 ? 'bg-slate-50 text-secondary border-border' : 'bg-amber-100 text-amber-900 border-amber-300'}`}>
+                    {claims.length > 0 && approvedCount === claims.length ? 'Complete' : claims.length === 0 ? 'Not started' : 'Needs Attention'}
                   </span>
                   {onNavigateToQuestionnaire && draftCount > 0 && (
                     <button
@@ -422,7 +427,7 @@ export function ExportsView({
             <div className="pt-2">
               <button
                 onClick={handleExportWorkbook}
-                disabled={isExporting}
+                disabled={isExporting || claims.length === 0 || !includeXlsx}
                 className="w-full py-2.5 px-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-accent-hover transition-all  flex items-center justify-center gap-2 border border-[#9A3412] disabled:opacity-60"
               >
                 <span className="material-symbols-outlined text-[18px]">task_alt</span>

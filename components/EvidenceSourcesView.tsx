@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { EvidenceSourceFile, EvidenceLibraryItem } from '@/types/claimtrail';
 import { Dialog } from '@/components/Dialog';
 
@@ -12,6 +12,8 @@ interface EvidenceSourcesViewProps {
   onConnectRepo?: (repoUrl: string) => Promise<void>;
   onRemoveSource?: (sourceId: string, sourceName?: string) => Promise<void>;
   onUploadPdf?: (file: File) => Promise<void>;
+  hasAssessment?: boolean;
+  onCreateAssessment?: () => void;
 }
 
 export function EvidenceSourcesView({
@@ -21,13 +23,15 @@ export function EvidenceSourcesView({
   onConnectRepo,
   onRemoveSource,
   onUploadPdf,
+  hasAssessment = false,
+  onCreateAssessment,
 }: EvidenceSourcesViewProps) {
   const evidenceSources = useMemo(() => sources.filter((source) => source.type !== 'xlsx'), [sources]);
-  const [selectedSourceId, setSelectedSourceId] = useState<string>(evidenceSources[0]?.id || 'src-1');
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(evidenceSources[0]?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(evidenceSources.length > 0);
   const [drawerTab, setDrawerTab] = useState<'overview' | 'extracted' | 'linked'>('extracted');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,23 +43,18 @@ export function EvidenceSourcesView({
   const modalFileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSource = useMemo(
-    () => evidenceSources.find((s) => s.id === selectedSourceId) || evidenceSources[0] || {
-      id: 'default',
-      name: 'No sources connected',
-      type: 'pdf',
-      typeLabel: 'PDF Policy',
-      sizeOrBranch: '0 KB',
-      sha: 'none',
-      status: 'ready',
-      statusLabel: 'Ready',
-      extractedTitle: '0 sections',
-      extractedProgress: 100,
-      extractedNote: '',
-      linkedCount: 0,
-      lastUpdated: 'Never',
-    },
+    () => evidenceSources.find((s) => s.id === selectedSourceId) || evidenceSources[0],
     [evidenceSources, selectedSourceId]
   );
+
+  useEffect(() => {
+    if (evidenceSources.length === 0) {
+      setSelectedSourceId('');
+      setIsDrawerOpen(false);
+    } else if (!evidenceSources.some((source) => source.id === selectedSourceId)) {
+      setSelectedSourceId(evidenceSources[0].id);
+    }
+  }, [evidenceSources, selectedSourceId]);
 
   const filteredSources = useMemo(() => {
     return evidenceSources.filter((s) => {
@@ -98,7 +97,6 @@ export function EvidenceSourcesView({
       }
       setIsAddModalOpen(false);
       setSelectedFile(null);
-      onShowToast(`Evidence source successfully integrated and analyzed!`, 'success');
     } catch (err: any) {
       onShowToast(err.message || 'Failed to connect evidence source', 'warning');
     } finally {
@@ -120,9 +118,7 @@ export function EvidenceSourcesView({
               <h1>
                 Evidence Sources
               </h1>
-              <span className="bg-surface-container-low text-secondary border border-surface-container-high font-code-sm text-code-sm px-2 py-0.5 rounded">
-                ENV: PROD-AUDIT-26
-              </span>
+              <span className="bg-surface-container-low text-secondary border border-surface-container-high font-code-sm text-code-sm px-2 py-0.5 rounded">{evidenceSources.length} connected</span>
             </div>
             <p className="text-body-md font-body-md text-secondary mt-1">
               Manage the documents and repository evidence used to support questionnaire answers.
@@ -131,15 +127,8 @@ export function EvidenceSourcesView({
 
           <div className="ct-page-actions">
             <button
-              onClick={() => onShowToast('Extraction rule set: AST + OCR v4.2 active', 'info')}
-              className="px-3 rounded-md border border-border bg-surface text-secondary text-xs flex items-center gap-1.5 hover:bg-background transition-colors"
-            >
-              <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">tune</span>
-              <span>Extraction Rules</span>
-            </button>
-            <button
               id="add-evidence-source"
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => hasAssessment ? setIsAddModalOpen(true) : onCreateAssessment?.()}
               className="px-3.5 rounded-md bg-primary hover:bg-accent-hover text-on-primary text-xs font-medium flex items-center gap-1.5 transition-colors"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[16px]">add</span>
@@ -164,11 +153,11 @@ export function EvidenceSourcesView({
                 <span className="text-label-sm font-label-sm text-secondary">connected</span>
               </div>
               <span className="text-code-sm font-code-sm text-secondary bg-surface-container-low px-1.5 py-0.5 rounded border border-surface-container-high">
-                {evidenceSources.length > 0 ? '100% Target Met' : 'Pending Ingestion'}
+                {evidenceSources.length > 0 ? `${readyCount} ready` : 'Pending ingestion'}
               </span>
             </div>
             <div className="mt-2 pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-secondary">
-              <span>All active evidence feeds</span>
+              <span>Uploaded and connected sources</span>
               <span className="font-code-sm">{evidenceSources.length} of {evidenceSources.length} Active</span>
             </div>
           </div>
@@ -193,8 +182,8 @@ export function EvidenceSourcesView({
               </span>
             </div>
             <div className="mt-2 pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px] text-secondary">
-              <span>Fully Indexed Vector Pipeline</span>
-              <span className="font-code-sm text-emerald-700">0 Parser Faults</span>
+               <span>Sources with completed extraction</span>
+               <span className="font-code-sm text-emerald-700">{readyCount} ready</span>
             </div>
           </div>
 
@@ -315,7 +304,10 @@ export function EvidenceSourcesView({
               </thead>
               <tbody className="divide-y divide-surface-container-highest">
                 {filteredSources.length === 0 && (
-                  <tr><td colSpan={7} className="p-8 text-center text-sm text-secondary">No evidence sources match the selected filters.</td></tr>
+                  <tr><td colSpan={7} className="p-10 text-center text-sm text-secondary">
+                    <div>{evidenceSources.length === 0 ? 'No evidence sources connected yet.' : 'No evidence sources match the selected filters.'}</div>
+                    {evidenceSources.length === 0 && <button onClick={() => hasAssessment ? setIsAddModalOpen(true) : onCreateAssessment?.()} className="mt-3 rounded-md bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-accent-hover">{hasAssessment ? 'Add Evidence Source' : 'Create Assessment'}</button>}
+                  </td></tr>
                 )}
                 {filteredSources.map((source) => {
                   const isSelected = selectedSourceId === source.id && isDrawerOpen;
@@ -466,7 +458,7 @@ export function EvidenceSourcesView({
       {/* ======================================================================= */}
       {/* SLIDE-OVER SOURCE DETAIL DRAWER                                         */}
       {/* ======================================================================= */}
-      {isDrawerOpen && (
+      {isDrawerOpen && selectedSource && (
         <aside aria-label="Source details" className="w-full min-[1440px]:w-[360px] 2xl:w-[400px] bg-surface border-t min-[1440px]:border-t-0 min-[1440px]:border-l border-border flex flex-col min-h-80 min-[1440px]:h-full z-10 shrink-0">
           {/* Drawer Header */}
           <div className="p-4 border-b border-surface-container-highest flex items-start justify-between bg-surface-container-lowest">

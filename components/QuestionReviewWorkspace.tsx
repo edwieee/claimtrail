@@ -53,7 +53,7 @@ export function QuestionReviewWorkspace({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [editedAnswer, setEditedAnswer] = useState('');
   const [reviewReason, setReviewReason] = useState('');
-  const [reviewerName, setReviewerName] = useState('Lead Security Assessor');
+  const [reviewerName, setReviewerName] = useState('');
   const [hasOverride, setHasOverride] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -61,20 +61,13 @@ export function QuestionReviewWorkspace({
   const activeClaim = useMemo(
     () => claims.find((c) => c.id === selectedClaimId || c.code === selectedClaimId) ?? claims[0] ?? {
       id: 'default',
-      code: 'SEC-104',
-      category: 'Access Control',
-      question: 'How is customer data separated and isolated across multi-tenant storage layers?',
-      vendorDraftAnswer: 'Data isolation is enforced via PostgreSQL RLS.',
-      status: 'green',
-      statusDetail: 'Verified',
-      primarySourcePath: 'auth/tenant_middleware.go',
-      signalsCount: { supporting: 1, conflicting: 0, pending: 0 },
+      code: '', category: '', question: '', vendorDraftAnswer: '', status: 'amber', statusDetail: 'No question selected', limitations: '', primarySourcePath: '', linePageRef: '', verifiedTimestamp: '', signalsCount: { supporting: 0, conflicting: 0, pending: 0 }, nodes: [], links: [],
     },
     [claims, selectedClaimId]
   );
 
   useEffect(() => {
-    setEditedAnswer(activeClaim.editedAnswer || activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
+    setEditedAnswer(activeClaim.editedAnswer || activeClaim.answerDraft || activeClaim.vendorDraftAnswer || '');
     setIsEditing(false);
     setHasOverride(Boolean(activeClaim.approval?.hasUnresolvedFindingOverride));
   }, [activeClaim]);
@@ -99,7 +92,7 @@ export function QuestionReviewWorkspace({
     [claims, activeClaim]
   );
 
-  const currentAnswer = isEditing ? editedAnswer : (activeClaim.editedAnswer || activeClaim.vendorDraftAnswer || activeClaim.answerDraft || '');
+  const currentAnswer = isEditing ? editedAnswer : (activeClaim.editedAnswer || activeClaim.answerDraft || activeClaim.vendorDraftAnswer || '');
   const currentStatus = activeClaim.reviewStatus || 'draft';
 
   const handlePrev = () => {
@@ -115,6 +108,10 @@ export function QuestionReviewWorkspace({
   };
 
   const handleApprove = async () => {
+    if (!reviewerName.trim()) {
+      onShowToast('Enter the reviewer name before approving an answer.', 'warning');
+      return;
+    }
     if (hasUnresolvedIssues && !hasOverride) {
       onShowToast('Approval blocked: Acknowledge unresolved findings and check the override box.', 'warning');
       return;
@@ -123,7 +120,7 @@ export function QuestionReviewWorkspace({
       if (onUpdateClaim) {
         await onUpdateClaim(activeClaim.id, {
           reviewStatus: 'approved',
-          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reviewer: reviewerName.trim(),
           reason: reviewReason.trim() || undefined,
           hasUnresolvedFindingOverride: hasUnresolvedIssues ? hasOverride : false,
         });
@@ -135,11 +132,15 @@ export function QuestionReviewWorkspace({
   };
 
   const handleReject = async () => {
+    if (!reviewerName.trim()) {
+      onShowToast('Enter the reviewer name before rejecting an answer.', 'warning');
+      return;
+    }
     try {
       if (onUpdateClaim) {
         await onUpdateClaim(activeClaim.id, {
           reviewStatus: 'rejected',
-          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reviewer: reviewerName.trim(),
           reason: reviewReason.trim() || 'Rejected during final audit review',
         });
       }
@@ -154,7 +155,7 @@ export function QuestionReviewWorkspace({
       if (onUpdateClaim) {
         await onUpdateClaim(activeClaim.id, {
           reviewStatus: 'needs_review',
-          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reviewer: reviewerName.trim() || undefined,
           reason: reviewReason.trim() || undefined,
         });
       }
@@ -184,7 +185,7 @@ export function QuestionReviewWorkspace({
         await onUpdateClaim(activeClaim.id, {
           answerText: editedAnswer,
           reviewStatus: 'needs_review',
-          reviewer: reviewerName.trim() || 'Lead Security Assessor',
+          reviewer: reviewerName.trim() || undefined,
         });
       }
       setIsEditing(false);
@@ -642,7 +643,7 @@ export function QuestionReviewWorkspace({
                         </span>
                       </div>
                       <span className="text-[11px] font-code-sm text-secondary">
-                        {activeClaim.codeCitation?.repo || 'github.com/acme/core-api'}
+                        {activeClaim.codeCitation?.repo || 'No repository citation available'}
                       </span>
                     </div>
 
@@ -713,7 +714,7 @@ export function QuestionReviewWorkspace({
                         </span>
                       </div>
                       <span className="text-[11px] font-code-sm text-secondary">
-                        {activeClaim.policyCitation?.docName || 'Acme_InfoSec_Policy_v4.2.pdf'}
+                        {activeClaim.policyCitation?.docName || 'No policy citation available'}
                       </span>
                     </div>
 

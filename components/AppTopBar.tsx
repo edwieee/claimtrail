@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 interface AppTopBarProps {
   breadcrumb: string[];
@@ -13,6 +14,7 @@ interface AppTopBarProps {
   primaryActionLabel?: string;
   onPrimaryAction?: () => void;
   onOpenSettings?: () => void;
+  assessmentName?: string;
 }
 
 export function AppTopBar({
@@ -26,6 +28,7 @@ export function AppTopBar({
   primaryActionLabel,
   onPrimaryAction,
   onOpenSettings,
+  assessmentName,
 }: AppTopBarProps) {
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -44,7 +47,7 @@ export function AppTopBar({
       {/* Left side: Breadcrumb & Context Switcher */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-secondary min-w-0">
-          <span className="md:hidden font-semibold text-on-surface">ClaimTrail</span>
+          <Link href="/" title="Back to ClaimTrail website" className="md:hidden font-semibold text-on-surface hover:text-primary transition-colors">ClaimTrail</Link>
           {breadcrumb.map((crumb, idx) => (
             <React.Fragment key={idx}>
               <span aria-hidden="true" className={`text-secondary/50 text-[11px] ${idx === 0 ? 'hidden' : idx === breadcrumb.length - 1 ? 'md:hidden xl:inline' : 'hidden xl:inline'}`}>/</span>
@@ -63,11 +66,10 @@ export function AppTopBar({
         </nav>
 
         {/* Assessment Selector Dropdown Pill */}
-        <div className="hidden min-[1800px]:flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high font-label-md text-label-md text-on-surface shrink-0">
+        {assessmentName && <div className="hidden min-[1800px]:flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container-low border border-surface-container-high font-label-md text-label-md text-on-surface shrink-0">
           <span className="w-2 h-2 rounded-full bg-primary-container shrink-0" />
-          <span className="font-medium text-xs">AcmeCorp Enterprise Security 2026</span>
-          <span aria-hidden="true" className="material-symbols-outlined text-sm text-secondary">unfold_more</span>
-        </div>
+          <span className="font-medium text-xs">{assessmentName}</span>
+        </div>}
       </div>
 
       {/* Right Side: Search, Trailing Actions, User Utilities */}
@@ -124,9 +126,9 @@ export function AppTopBar({
           onClick={onOpenSettings}
           aria-label="Open assessment settings"
           className="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center text-[11px] font-medium shrink-0"
-          title="Lead Auditor: S. Chen"
+          title="Assessment settings"
         >
-          SC
+          CT
         </button>
       </div>
     </header>

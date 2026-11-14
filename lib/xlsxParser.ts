@@ -438,23 +438,21 @@ export async function parseXlsxQuestionnaire(
       code: cleanCode,
       category: catCellText,
       question: qCellText,
-      vendorDraftAnswer:
-        aCellText ||
-        'Vendor compliance controls are actively enforced and documented in corporate information security policies.',
-      status: aCellText ? 'green' : 'amber',
-      statusDetail: aCellText ? 'Imported from workbook response' : 'Pending evidence evaluation',
+      vendorDraftAnswer: aCellText,
+      status: 'amber',
+      statusDetail: aCellText ? 'Workbook response imported; evidence verification pending' : 'Pending evidence evaluation',
       limitations: rowComment
         ? `Workbook comment: ${rowComment}`
         : 'Requires automated source evidence inspection.',
       primarySourcePath: originalFilename,
       linePageRef: `Row ${r}, Col ${qCol}`,
       verifiedTimestamp: new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC',
-      signalsCount: { supporting: aCellText ? 1 : 0, conflicting: 0, pending: 1 },
+      signalsCount: { supporting: 0, conflicting: 0, pending: 1 },
       sheetName: targetSheet.name,
       rowNumber: r,
       questionCol: qCol,
       answerCol: aCol,
-      reviewStatus: aCellText ? 'approved' : 'draft',
+      reviewStatus: 'draft',
       comments: rowComment || undefined,
       nodes: [
         {
@@ -465,9 +463,9 @@ export async function parseXlsxQuestionnaire(
           pathOrReference: originalFilename,
           lineOrPageRef: `Row ${r}`,
           snippet: qCellText,
-          status: aCellText ? 'green' : 'amber',
-          statusText: aCellText ? 'Imported Answer' : 'Pending Review',
-          confidence: aCellText ? 90 : 50,
+          status: 'amber',
+          statusText: 'Pending Evidence Review',
+          confidence: 0,
         },
       ],
       links: [],

@@ -120,8 +120,8 @@ export function FindingsAndChecksView({
         severity: c.severity,
         severityLabel: c.severity === 'high' ? 'High Priority' : 'Needs Review',
         relatedQuestionCode: c.claimCode,
-        relatedControl: relatedClaim?.category || 'Access Control',
-        questionText: relatedClaim?.question || 'How is customer data isolated and protected?',
+        relatedControl: relatedClaim?.category || 'Unlinked',
+        questionText: relatedClaim?.question || 'Linked questionnaire item unavailable.',
         sourceSummary: `${c.sourceA.label} vs ${c.sourceB.label}`,
         flagReason: `Discrepancy detected between policy mandate (${c.sourceA.statement}) and code implementation (${c.sourceB.statement}).`,
         policyCitation: {
@@ -245,10 +245,11 @@ export function FindingsAndChecksView({
           {onRunEvidenceCheck && (
             <button
               onClick={onRunEvidenceCheck}
-              className="px-3 rounded-md bg-surface text-on-surface text-xs font-medium flex items-center gap-1.5 hover:bg-background transition-colors border border-border"
+              disabled={claims.length === 0}
+              className="px-3 rounded-md bg-surface text-on-surface text-xs font-medium flex items-center gap-1.5 hover:bg-background transition-colors border border-border disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[16px]">refresh</span>
-              <span>Re-run Evidence Check</span>
+              <span>{checkResults.length > 0 ? 'Re-run Evidence Check' : 'Run Evidence Check'}</span>
             </button>
           )}
         </div>

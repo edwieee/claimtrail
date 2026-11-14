@@ -10,17 +10,19 @@ interface QuestionnaireViewProps {
   onSelectQuestionForReview: (claim: SecurityClaim) => void;
   onOpenReviewWorkspace: () => void;
   onUploadQuestionnaire?: (file: File) => Promise<void>;
-  onLoadSample?: () => Promise<void>;
+  onCreateAssessment?: () => void;
+  hasAssessment?: boolean;
 }
 
 export function QuestionnaireView({
   claims,
   evidenceMappings = {},
-  targetFilename = 'AcmeCorp-Security-Assessment-2026.xlsx',
+  targetFilename = '',
   onSelectQuestionForReview,
   onOpenReviewWorkspace,
   onUploadQuestionnaire,
-  onLoadSample,
+  onCreateAssessment,
+  hasAssessment = false,
 }: QuestionnaireViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [domainFilter, setDomainFilter] = useState('all');
@@ -126,29 +128,29 @@ export function QuestionnaireView({
         </div>
 
         <div className="ct-page-actions">
-          {onLoadSample && (
+          {!hasAssessment && onCreateAssessment && (
             <button
-              onClick={onLoadSample}
+              onClick={onCreateAssessment}
               className="px-3 py-2 bg-surface text-secondary border border-border rounded-md text-xs hover:bg-background transition-colors flex items-center gap-1.5"
-              title="Reset and load sample assessment"
             >
-              <span aria-hidden="true" className="material-symbols-outlined text-[17px] text-secondary">restart_alt</span>
-              <span>Load Sample Assessment</span>
+              <span aria-hidden="true" className="material-symbols-outlined text-[17px] text-secondary">add</span>
+              <span>Create Assessment</span>
             </button>
           )}
 
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => (hasAssessment ? fileInputRef.current?.click() : onCreateAssessment?.())}
             disabled={isUploading}
             className="px-3 py-2 bg-surface text-on-surface border border-border rounded-md text-xs hover:bg-background transition-colors flex items-center gap-2 disabled:opacity-60"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary">upload_file</span>
-            <span>{isUploading ? 'Parsing XLSX...' : 'Upload New XLSX'}</span>
+            <span>{isUploading ? 'Parsing XLSX...' : 'Upload Questionnaire'}</span>
           </button>
 
           <button
             onClick={onOpenReviewWorkspace}
-            className="px-3 py-2 bg-on-surface text-white rounded-md text-xs font-medium hover:bg-inverse-surface transition-colors flex items-center gap-2"
+            disabled={claims.length === 0}
+            className="px-3 py-2 bg-on-surface text-white rounded-md text-xs font-medium hover:bg-inverse-surface transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-[18px]">verified_user</span>
             <span>Open Review Workspace</span>
@@ -180,26 +182,24 @@ export function QuestionnaireView({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-on-surface break-all">
-                {targetFilename}
-              </span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-medium font-code-sm">
+              <span className="text-sm font-medium text-on-surface break-all">{targetFilename || 'Upload your first questionnaire'}</span>
+              {targetFilename && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-medium font-code-sm">
                 <span className="w-1 h-1 rounded-full bg-emerald-600" /> Parsed &amp; Indexed
-              </span>
+              </span>}
             </div>
             <p className="text-code-sm font-code-sm text-secondary mt-0.5">
-              {claims.length} Questions loaded • Verified against SHA-256 Checksum • Drag .xlsx here to replace
+              {targetFilename ? `${claims.length} questions loaded • SHA-256 recorded • Drag .xlsx here to replace` : 'Choose or drop a supported .xlsx questionnaire to begin.'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => (hasAssessment ? fileInputRef.current?.click() : onCreateAssessment?.())}
             className="text-xs text-primary font-code-sm bg-surface-container-low px-2.5 py-1 rounded border border-surface-container-high hover:bg-surface-container transition-colors flex items-center gap-1"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-xs">file_upload</span>
-            <span>Replace File</span>
+            <span>{targetFilename ? 'Replace File' : 'Choose XLSX'}</span>
           </button>
         </div>
       </div>
@@ -311,7 +311,7 @@ export function QuestionnaireView({
               {filteredClaims.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-secondary text-sm">
-                    No questions found matching your filter criteria.
+                    {claims.length === 0 ? 'No questionnaire uploaded yet. Upload an .xlsx file to populate this workspace.' : 'No questions found matching your filter criteria.'}
                   </td>
                 </tr>
               ) : (
@@ -325,7 +325,7 @@ export function QuestionnaireView({
                         {claim.question}
                       </span>
                       <p className="text-body-sm font-body-sm text-secondary mt-1 text-xs line-clamp-2 leading-relaxed">
-                        {claim.vendorDraftAnswer}
+                        {claim.editedAnswer || claim.answerDraft || claim.vendorDraftAnswer || 'No answer drafted yet.'}
                       </p>
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] text-secondary font-code-sm break-all">
                         <span>Ref: {claim.linePageRef || 'SOC2-CC6.1'}</span>

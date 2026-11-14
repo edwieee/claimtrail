@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const { repoUrl, githubToken } = body;
+    const current = getAssessmentStore();
+    if (!current.assessmentId) {
+      return NextResponse.json({ error: 'Create an assessment before adding evidence sources.' }, { status: 409 });
+    }
 
     if (!repoUrl || typeof repoUrl !== 'string') {
       return NextResponse.json(
@@ -28,7 +32,6 @@ export async function POST(request: NextRequest) {
     saveRepoInspectionCache(repoSourceKey, result.inspectedFiles);
 
     // Get current questionnaire claims to correlate code evidence
-    const current = getAssessmentStore();
     const existingClaims = current.claims || [];
 
     // Map chunks to relevant claim codes based on file path and content keywords

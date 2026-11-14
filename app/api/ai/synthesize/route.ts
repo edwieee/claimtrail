@@ -25,6 +25,9 @@ export async function POST(req: NextRequest) {
     }
 
     const mapping = retrieveEvidenceForClaim(claim, current.sources, { limit: 8 });
+    if (mapping.evidence.length === 0) {
+      return NextResponse.json({ error: 'No relevant evidence was retrieved for this question. Add or update evidence sources before generating a draft.' }, { status: 409 });
+    }
     const findings = (current.findings || []).filter((finding) => finding.relatedClaimIds.includes(claim.id));
     const draft = await generateEvidenceGroundedDraft(claim, mapping, findings, { model });
     const nextVersion = (claim.answerVersion || 0) + 1;

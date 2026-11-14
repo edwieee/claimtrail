@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import type { NavItem } from '@/types/claimtrail';
 
 interface AppSidebarProps {
@@ -8,6 +9,7 @@ interface AppSidebarProps {
   onNavChange: (nav: NavItem) => void;
   onOpenSettings?: () => void;
   onImportBatch?: () => void;
+  counts?: { questions: number; sources: number; findings: number };
 }
 
 interface SidebarNavItem {
@@ -20,9 +22,9 @@ interface SidebarNavItem {
 
 const NAV_ITEMS: SidebarNavItem[] = [
   { id: 'overview', label: 'Overview', icon: 'dashboard' },
-  { id: 'questionnaire', label: 'Questionnaire', icon: 'quiz', badge: '38', badgeColor: 'neutral' },
-  { id: 'sources', label: 'Evidence Sources', icon: 'folder_open', badge: '3', badgeColor: 'neutral' },
-  { id: 'findings', label: 'Findings', icon: 'verified_user', badge: '3', badgeColor: 'copper' },
+  { id: 'questionnaire', label: 'Questionnaire', icon: 'quiz', badgeColor: 'neutral' },
+  { id: 'sources', label: 'Evidence Sources', icon: 'folder_open', badgeColor: 'neutral' },
+  { id: 'findings', label: 'Findings', icon: 'verified_user', badgeColor: 'copper' },
   { id: 'exports', label: 'Exports', icon: 'file_upload' },
 ];
 
@@ -31,6 +33,7 @@ export function AppSidebar({
   onNavChange,
   onOpenSettings,
   onImportBatch,
+  counts = { questions: 0, sources: 0, findings: 0 },
 }: AppSidebarProps) {
   // Normalize legacy NavItem states if any
   const activeId =
@@ -81,6 +84,7 @@ export function AppSidebar({
         <nav aria-label="Main navigation" className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive = activeId === item.id;
+            const badge = item.id === 'questionnaire' ? counts.questions : item.id === 'sources' ? counts.sources : item.id === 'findings' ? counts.findings : undefined;
             return (
               <button
                 key={item.id}
@@ -102,7 +106,7 @@ export function AppSidebar({
                   </span>
                   <span>{item.label}</span>
                 </div>
-                {item.badge && (
+                {badge !== undefined && (
                   <span
                     className={`font-code-sm text-code-sm px-1.5 py-0.2 rounded ${
                       item.badgeColor === 'copper'
@@ -112,7 +116,7 @@ export function AppSidebar({
                         : 'bg-surface-container text-secondary'
                     }`}
                   >
-                    {item.badge}
+                    {badge}
                   </span>
                 )}
               </button>
@@ -131,8 +135,16 @@ export function AppSidebar({
               Engine v2.4 Active
             </span>
           </div>
-          <span className="text-[11px] text-secondary font-code-sm">99.98%</span>
+          <span className="text-[11px] text-secondary font-code-sm">Ready</span>
         </div>
+
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 px-3 py-2 text-secondary hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors text-left"
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span>Back to website</span>
+        </Link>
 
         <button
           onClick={onOpenSettings}
@@ -142,22 +154,6 @@ export function AppSidebar({
           <span>Settings</span>
         </button>
 
-        {/* User Account Chip */}
-        <div className="mt-2 pt-3 border-t border-surface-container-high flex items-center justify-between px-1">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
-              SC
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-label-md text-label-md font-medium text-on-surface leading-tight truncate">
-                Acme Security
-              </span>
-              <span className="font-code-sm text-code-sm text-secondary truncate max-w-[125px]">
-                lead-sec@acme.io
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </aside>
   );

@@ -287,7 +287,15 @@ export async function inspectPublicGitHubRepo(
   repoUrl: string,
   githubToken?: string
 ): Promise<InspectRepoResult> {
-  const { owner, repo, canonicalUrl } = parseGitHubUrl(repoUrl);
+  let parsedRepo: { owner: string; repo: string; canonicalUrl: string };
+  try {
+    parsedRepo = parseGitHubUrl(repoUrl);
+  } catch (err: any) {
+    const validationError = new Error(err?.message || 'Invalid repository URL.');
+    (validationError as any).status = 400;
+    throw validationError;
+  }
+  const { owner, repo, canonicalUrl } = parsedRepo;
 
   const token = githubToken || process.env.GITHUB_TOKEN || undefined;
 

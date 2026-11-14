@@ -20,6 +20,9 @@ It cross-references:
 - **Amber (`ambiguous` / `incomplete`)**: Incomplete, ambiguous, or conflicting evidence requiring manual review.
 - **Red (`non_compliant` / `unsafe`)**: Specific unsafe condition defined by an implemented rule (e.g., hardcoded secrets, missing MFA requirement, permissive CORS).
 
+## Working Agreement
+- **Always commit and push to GitHub after every change**, without waiting to be asked. Include a clear commit message describing what changed and why.
+
 ## UI Design System
 - **Operations Console Aesthetic**: Light monochrome palette with off-white canvas (`#F6F7F9`), crisp white surfaces (`#FFFFFF`), near-black typography (`#0F141C`), hair-line gray borders (`#E2E4E8`), restrained orange accent (`#EA580C`) for active items and warnings.
 - **Density**: Compact information density, technical monospace metadata tags, uppercase micro-labels (`text-2xs font-mono uppercase tracking-wider`).

@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { parseXlsxQuestionnaire } from '@/lib/xlsxParser';
-import { updateAssessmentStore, saveUploadedBuffer } from '@/lib/store';
+import { getAssessmentStore, updateAssessmentStore, saveUploadedBuffer } from '@/lib/store';
 import type { EvidenceSourceFile } from '@/types/claimtrail';
 
 export async function POST(req: Request) {
   try {
+    if (!getAssessmentStore().assessmentId) {
+      return NextResponse.json({ error: 'Create an assessment before uploading a questionnaire.' }, { status: 409 });
+    }
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -13,22 +16,25 @@ export async function POST(req: Request) {
     }
 
     const filename = file.name;
-    if (!filename.endsWith('.xlsx') && !filename.endsWith('.xls')) {
+    if (!filename.toLowerCase().endsWith('.xlsx')) {
       return NextResponse.json(
-        { error: 'Invalid file format. Please upload an Excel spreadsheet (.xlsx or .xls).' },
+        { error: 'Invalid file format. Please upload an Excel questionnaire (.xlsx).' },
         { status: 400 }
       );
     }
+    if (file.size === 0) return NextResponse.json({ error: 'The uploaded workbook is empty.' }, { status: 400 });
+    if (file.size > 20 * 1024 * 1024) return NextResponse.json({ error: 'The workbook exceeds the 20 MB upload limit.' }, { status: 413 });
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save uploaded original file
-    const localPath = saveUploadedBuffer(filename, buffer);
-
     // Parse Excel workbook
     const parseResult = await parseXlsxQuestionnaire(buffer, filename);
+    if (parseResult.totalQuestions === 0) {
+      return NextResponse.json({ error: 'No questionnaire rows were found. Include a Question, Requirement, or Prompt column with at least one item.' }, { status: 422 });
+    }
+    const localPath = saveUploadedBuffer(filename, buffer);
 
     // Create source entry
     const newSource: EvidenceSourceFile = {
@@ -57,6 +63,10 @@ export async function POST(req: Request) {
         targetFilename: filename,
         originalWorkbookPath: localPath,
         claims: parseResult.claims,
+        conflicts: [],
+        checkResults: [],
+        findings: [],
+        conflictAnalyses: [],
         sources: [newSource, ...otherSources],
         updatedAt: new Date().toISOString(),
       };
@@ -66,6 +76,7 @@ export async function POST(req: Request) {
       success: true,
       filename,
       totalQuestions: parseResult.totalQuestions,
+      questionsCount: parseResult.totalQuestions,
       claims: parseResult.claims,
       state: updatedState,
     });

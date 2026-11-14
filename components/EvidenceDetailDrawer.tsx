@@ -51,9 +51,6 @@ export function EvidenceDetailDrawer({ item, onClose, onNavigateToQuestion }: Ev
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-3xs font-mono text-signal-amber bg-signal-amber-bg border border-signal-amber-border px-1.5 py-0.5 rounded font-medium">
-              DEMO DATA
-            </span>
             <button
               onClick={onClose}
               aria-label="Close evidence details"

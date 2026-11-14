@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
     if (reviewStatus && !['draft', 'approved', 'needs_review', 'rejected', 'stale'].includes(reviewStatus)) {
       return NextResponse.json({ error: 'Invalid answer review status.' }, { status: 400 });
     }
+    if ((reviewStatus === 'approved' || reviewStatus === 'rejected') && (typeof reviewer !== 'string' || !reviewer.trim())) {
+      return NextResponse.json({ error: 'Reviewer name is required for approval or rejection.' }, { status: 400 });
+    }
 
     let updatedTargetClaim = null;
 
@@ -22,7 +25,7 @@ export async function POST(req: NextRequest) {
         if (claim.id === claimId || claim.code === claimId) {
           const hasAnswerText = typeof answerText === 'string';
           const nextVersion = (claim.answerVersion || 0) + (hasAnswerText ? 1 : 0);
-          const reviewerName = typeof reviewer === 'string' && reviewer.trim() ? reviewer.trim() : 'Security Reviewer';
+          const reviewerName = typeof reviewer === 'string' && reviewer.trim() ? reviewer.trim() : undefined;
           const historyEntry: AnswerVersion | null = hasAnswerText
             ? {
                 version: nextVersion,

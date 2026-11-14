@@ -52,7 +52,6 @@ export const DetailInspectorModal: React.FC<DetailInspectorModalProps> = ({
             <span className={`pill ml-1 ${statusCfg.cls}`}>{statusCfg.label}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xs font-mono text-signal-amber font-semibold">DEMO AUDIT TRAIL</span>
             <button
               onClick={onClose}
               aria-label="Close evidence inspector"

@@ -55,7 +55,7 @@ export async function generateCompletedQuestionnaireXlsx(
   claims: SecurityClaim[],
   options?: ExportWorkbookOptions
 ): Promise<ExportWorkbookResult> {
-  const assessmentName = options?.assessmentName || 'AcmeCorp-Security-Assessment-2026';
+  const assessmentName = options?.assessmentName || 'ClaimTrail-Assessment';
   const cleanName = assessmentName.replace(/[^a-zA-Z0-9_-]/g, '_');
   const filename = `${cleanName}-COMPLETED-v1.0.xlsx`;
 

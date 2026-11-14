@@ -22,7 +22,7 @@ export function OverviewDashboard({
   conflicts,
   findings = [],
   sources,
-  targetFilename = 'AcmeCorp-Security-Assessment-2026.xlsx',
+  targetFilename = '',
   onSelectQuestionForReview,
   onNavigateToQuestionnaire,
   onNavigateToSources,
@@ -108,6 +108,45 @@ export function OverviewDashboard({
   }, [claims, tableFilter, questionsWithUnresolvedIssues]);
 
   const evidenceSourceCount = sources.filter((s) => s.type !== 'xlsx').length;
+
+  if (totalQuestions === 0) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-background px-5 py-6 md:px-8">
+        <div className="mx-auto max-w-[1520px] space-y-6">
+          <div className="flex flex-col justify-between gap-4 border-b border-border pb-4 md:flex-row md:items-center">
+            <div>
+              <h1 className="text-headline-lg font-bold tracking-tight text-on-surface">Assessment Overview</h1>
+              <p className="mt-1 text-body-md text-secondary">Build an evidence-backed questionnaire assessment from your own files.</p>
+            </div>
+            <button onClick={onNewAssessment} className="inline-flex items-center gap-1.5 self-start rounded-md bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover">
+              <span aria-hidden="true" className="material-symbols-outlined text-base">add</span>
+              New Assessment
+            </button>
+          </div>
+
+          <div className="ct-metrics grid-cols-2 lg:grid-cols-5">
+            {[
+              ['Questions', '0'], ['Evidence sources', String(evidenceSourceCount)], ['Findings', '0'], ['Pending reviews', '0'], ['Exports', '0'],
+            ].map(([label, value]) => (
+              <div key={label}><div className="text-[11px] font-semibold uppercase tracking-wider text-secondary">{label}</div><div className="mt-2 text-2xl font-bold text-on-surface">{value}</div></div>
+            ))}
+          </div>
+
+          <section className="ct-panel flex min-h-80 flex-col items-center justify-center px-6 py-12 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-background text-primary">
+              <span aria-hidden="true" className="material-symbols-outlined text-2xl">upload_file</span>
+            </div>
+            <h2 className="mt-5 text-xl font-semibold tracking-tight text-on-surface">Upload your first questionnaire</h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-secondary">Import an .xlsx security questionnaire to extract its real questions. Then connect policy PDFs and a GitHub repository before running evidence checks.</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <button onClick={() => onNavigateToQuestionnaire()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-accent-hover">Upload Questionnaire</button>
+              <button onClick={onNavigateToSources} className="rounded-md border border-border bg-surface px-4 py-2 text-xs font-medium text-on-surface hover:bg-background">Add Evidence Sources</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-background custom-scrollbar">

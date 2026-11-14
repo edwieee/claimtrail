@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { parseSecurityPolicyPdf } from '@/lib/pdfParser';
-import { updateAssessmentStore, saveUploadedBuffer } from '@/lib/store';
+import { getAssessmentStore, updateAssessmentStore, saveUploadedBuffer } from '@/lib/store';
 import type { EvidenceSourceFile } from '@/types/claimtrail';
 
 export async function POST(req: Request) {
   try {
+    if (!getAssessmentStore().assessmentId) {
+      return NextResponse.json({ error: 'Create an assessment before adding evidence sources.' }, { status: 409 });
+    }
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -19,15 +22,15 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    if (file.size === 0) return NextResponse.json({ error: 'The uploaded PDF is empty.' }, { status: 400 });
+    if (file.size > 25 * 1024 * 1024) return NextResponse.json({ error: 'The PDF exceeds the 25 MB upload limit.' }, { status: 413 });
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save uploaded file locally
-    const localPath = saveUploadedBuffer(filename, buffer);
-
     // Parse PDF text & chunk by sections
     const parseResult = await parseSecurityPolicyPdf(buffer, filename);
+    const localPath = saveUploadedBuffer(filename, buffer);
 
     // Map extracted chunks
     const chunks = parseResult.chunks.map((c, i) => ({
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
     };
 
     const updatedState = updateAssessmentStore((prev) => {
-      const otherSources = prev.sources.filter((s) => s.type !== 'pdf');
+      const otherSources = prev.sources.filter((s) => s.id !== newSource.id && !(s.type === 'pdf' && s.name === filename));
       return {
         ...prev,
         sources: [...otherSources, newSource],

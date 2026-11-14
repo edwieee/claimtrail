@@ -1,13 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 import ExcelJS from 'exceljs';
 import { generateCompletedQuestionnaireXlsx } from '../lib/xlsxExporter';
 import type { SecurityClaim } from '../types/claimtrail';
 
 describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
   const baseSignals = { supporting: 1, conflicting: 0, pending: 0 };
-  const sampleClaims: SecurityClaim[] = [
+  const testClaims: SecurityClaim[] = [
     {
       id: 'claim-step7-01',
       code: 'SEC-101',
@@ -41,7 +39,7 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
       questionCol: 2,
       answerCol: 4,
       policyCitation: {
-        docName: 'Acme_InfoSec_Policy_v4.2.pdf',
+        docName: 'Information_Security_Policy.pdf',
         section: 'Section 4.1: Cryptographic Key Management',
         page: 22,
         quote: 'Customer master keys configured in AWS KMS must automatically rotate annually.',
@@ -139,35 +137,29 @@ describe('Step 7: Final Review Workflow, Approval Rules & Excel Export', () => {
   ];
 
   it('enforces safe approval metadata with reviewer identity, timestamp, version, and overrides', () => {
-    const approvedClaim = sampleClaims[0];
+    const approvedClaim = testClaims[0];
     expect(approvedClaim.reviewStatus).toBe('approved');
     expect(approvedClaim.approval?.reviewer).toBe('Alice Doe (Lead Security Architect)');
     expect(approvedClaim.approval?.version).toBe(2);
     expect(approvedClaim.approval?.notes).toContain('AWS KMS terraform');
     expect(approvedClaim.approval?.hasUnresolvedFindingOverride).toBe(false);
 
-    const overrideClaim = sampleClaims[3];
+    const overrideClaim = testClaims[3];
     expect(overrideClaim.approval?.hasUnresolvedFindingOverride).toBe(true);
     expect(overrideClaim.approval?.notes).toContain('Risk accepted');
 
-    const rejectedClaim = sampleClaims[2];
+    const rejectedClaim = testClaims[2];
     expect(rejectedClaim.reviewStatus).toBe('rejected');
     expect(rejectedClaim.approval?.status).toBe('rejected');
   });
 
   it('generates completed questionnaire workbook and formats responses safely', async () => {
-    const sampleXlsxPath = path.join(process.cwd(), 'public', 'samples', 'AcmeCorp-Security-Assessment-2026.xlsx');
-    let originalBuffer: Buffer | null = null;
-    if (fs.existsSync(sampleXlsxPath)) {
-      originalBuffer = fs.readFileSync(sampleXlsxPath);
-    }
-
-    const exportResult = await generateCompletedQuestionnaireXlsx(sampleClaims, {
-      assessmentName: 'AcmeCorp-Security-Assessment-2026',
+    const exportResult = await generateCompletedQuestionnaireXlsx(testClaims, {
+      assessmentName: 'Customer-Security-Assessment',
       includeDrafts: true,
       includeHashes: true,
       embedLinks: true,
-      originalWorkbookBuffer: originalBuffer,
+      originalWorkbookBuffer: null,
     });
 
     expect(exportResult.filename).toContain('.xlsx');

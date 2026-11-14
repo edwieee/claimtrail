@@ -16,6 +16,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    if (!current.sources.some((source) => source.type === 'pdf' || source.type === 'repo')) {
+      return NextResponse.json({ error: 'Add a policy PDF or GitHub repository before running evidence checks.' }, { status: 400 });
+    }
 
     const selectedClaims = requestedClaimId
       ? current.claims.filter((claim) => claim.id === requestedClaimId || claim.code === requestedClaimId)

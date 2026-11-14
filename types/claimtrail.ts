@@ -369,7 +369,7 @@ export interface ExportDeliverable {
   format: 'XLSX' | 'PDF';
   assessment: string;
   exportedAt: string;
-  status: 'Signed Draft' | 'Final Auditor Signed';
+  status: 'Draft' | 'Final';
   isDraft: boolean;
   sizeBytes: number;
   downloadUrl: string;

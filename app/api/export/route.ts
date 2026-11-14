@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const current = getAssessmentStore();
+    if (!current.assessmentId || current.claims.length === 0 || !current.originalWorkbookPath) {
+      return NextResponse.json({ error: 'Upload a questionnaire before generating an export.' }, { status: 400 });
+    }
     if (format !== 'XLSX' && format !== 'xlsx') {
       return NextResponse.json({ error: 'Only XLSX questionnaire export is currently implemented.' }, { status: 400 });
     }
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const exportResult = await generateCompletedQuestionnaireXlsx(current.claims, {
-      assessmentName: current.assessmentName || 'AcmeCorp-Security-Assessment-2026',
+      assessmentName: current.assessmentName || current.targetFilename.replace(/\.xlsx$/i, '') || 'ClaimTrail-Assessment',
       includeDrafts,
       includeHashes,
       embedLinks,
@@ -56,14 +59,14 @@ export async function POST(req: NextRequest) {
       id: exportId,
       filename: exportResult.filename,
       format: 'XLSX',
-      assessment: current.assessmentName || 'AcmeCorp Enterprise 2026',
+      assessment: current.assessmentName || 'Untitled assessment',
       exportedAt: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       }),
-      status: blockedClaims.length === 0 ? 'Final Auditor Signed' : 'Signed Draft',
+      status: blockedClaims.length === 0 ? 'Final' : 'Draft',
       isDraft: blockedClaims.length > 0,
       sizeBytes: exportResult.sizeBytes,
       downloadUrl: `/api/export/download/${exportId}`,

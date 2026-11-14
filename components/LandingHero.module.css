@@ -1,0 +1,179 @@
+.page {
+  --landing-background: #f7f7f7;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--landing-background);
+}
+
+.console { height: 100vh; height: 100svh; outline: none; }
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 120px 24px;
+}
+
+.map {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  pointer-events: none;
+  background-image: url('/images/claimtrail-hero-artwork.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.5;
+}
+
+/* A quiet clearing in the map, not a surface behind the heading. */
+.readability {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 48% 48% at 50% 48%, var(--landing-background) 30%, transparent 100%);
+}
+
+.header {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1280px, calc(100% - 96px));
+  min-height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  color: var(--on-surface);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--on-surface);
+  color: white;
+  font-size: 12px;
+  letter-spacing: -0.02em;
+}
+
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 3vw, 44px);
+}
+
+.desktopNav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--secondary);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.desktopNav a:hover, .desktopNav a[aria-current='page'] { color: var(--on-surface); }
+.desktopNav a[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--primary);
+}
+
+.cta {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border-radius: 7px;
+  background: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.cta:hover { background: #9a3412; }
+.headerCta { flex-shrink: 0; }
+.content {
+  width: 100%;
+  max-width: 1100px;
+  text-align: center;
+  outline: none;
+}
+
+.headline {
+  margin: 0;
+  font-size: clamp(1.75rem, 6.2vw, 5rem);
+  line-height: 1.09;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.headline span { display: block; }
+.headline span + span { color: #626873; }
+.supporting {
+  max-width: 540px;
+  margin: 26px auto 0;
+  font-size: clamp(15px, 1.3vw, 17px);
+  line-height: 1.75;
+  color: var(--secondary);
+  text-wrap: pretty;
+}
+
+.heroCta { min-height: 48px; margin-top: 32px; padding-inline: 23px; font-size: 14px; }
+.mobileMenu { display: none; }
+.skipLink { position: absolute; z-index: 10; top: 12px; left: 12px; padding: 10px 16px; background: white; transform: translateY(-200%); }
+.skipLink:focus { transform: translateY(0); }
+
+@media (max-width: 1023px) {
+  .header { width: calc(100% - 48px); min-height: 88px; gap: 20px; }
+  .desktopNav { gap: 22px; }
+  .brand { font-size: 19px; }
+  .headerCta { padding-inline: 16px; }
+}
+
+@media (max-width: 767px) {
+  .header { width: calc(100% - 40px); min-height: 80px; }
+  .desktopNav, .headerCta { display: none; }
+  .mobileMenu { display: block; }
+  .mobileMenu summary { display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; list-style: none; border-radius: 6px; }
+  .mobileMenu summary::-webkit-details-marker { display: none; }
+  .mobileMenu[open] summary { background: #eff1f4; }
+  .mobileMenu nav { position: absolute; top: 72px; left: 0; right: 0; display: flex; flex-direction: column; gap: 2px; padding: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 12px 28px -16px rgb(15 20 28 / 20%); }
+  .mobileMenu nav > a:not(.cta) { display: flex; align-items: center; min-height: 44px; padding: 10px 12px; color: var(--secondary); }
+  .mobileMenu nav > a[aria-current='page'] { color: var(--primary); }
+  .mobileMenu .cta { margin-top: 8px; }
+  .hero { padding: 100px 20px; }
+  .supporting { max-width: 340px; margin-top: 22px; }
+  .map { background-position: 52% center; opacity: 0.36; }
+  .readability { background: radial-gradient(ellipse 90% 38% at 50% 48%, var(--landing-background) 25%, transparent 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) { .cta { transition: none; } }

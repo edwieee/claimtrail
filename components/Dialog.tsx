@@ -22,7 +22,7 @@ export function Dialog({ children, label, onClose, drawer = false }: DialogProps
     if (!mounted) return;
     const previousFocus = document.activeElement as HTMLElement | null;
     const surface = ref.current;
-    const background = ['app-workspace', 'app-navigation'].map((id) => document.getElementById(id)).filter((element): element is HTMLElement => !!element);
+    const background = ['home', 'app-workspace', 'app-navigation'].map((id) => document.getElementById(id)).filter((element): element is HTMLElement => !!element);
     const previousInert = background.map((element) => element.inert);
     background.forEach((element) => { element.inert = true; });
     const getFocusable = () => Array.from(surface?.querySelectorAll<HTMLElement>(

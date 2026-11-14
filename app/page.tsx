@@ -13,6 +13,9 @@ import { EvidenceDetailDrawer } from '@/components/EvidenceDetailDrawer';
 import { DetailInspectorModal } from '@/components/DetailInspectorModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { ToastNotification } from '@/components/ToastNotification';
+import { Dialog } from '@/components/Dialog';
+import { LandingHero } from '@/components/LandingHero';
+import styles from '@/components/LandingHero.module.css';
 import { DEMO_CLAIMS, DEMO_CONFLICTS } from '@/data/demoData';
 import type {
   SecurityClaim,
@@ -28,6 +31,7 @@ import type {
 export default function DashboardPage() {
   // Navigation
   const [currentNav, setCurrentNav] = useState<NavItem>('overview');
+  const [isFaqOpen, setIsFaqOpen] = useState(false);
   const [questionnaireMode, setQuestionnaireMode] = useState<'catalog' | 'review'>('catalog');
 
   // Search
@@ -407,7 +411,15 @@ export default function DashboardPage() {
     }[currentNav] || { label: 'Run Evidence Check', action: handleRunEvidenceCheck };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-canvas">
+    <div className={styles.page}>
+      <LandingHero
+        onNavigate={(nav) => {
+          setCurrentNav(nav);
+          if (nav === 'questionnaire') setQuestionnaireMode('catalog');
+        }}
+        onOpenFaq={() => setIsFaqOpen(true)}
+      />
+      <section id="assessment" aria-label="Assessment workspace" tabIndex={-1} className={`${styles.console} flex w-full overflow-hidden bg-canvas`}>
       {/* ── Left Sidebar ── */}
       <AppSidebar
         currentNav={currentNav}
@@ -608,6 +620,44 @@ export default function DashboardPage() {
         }}
       />
 
+      {isFaqOpen && (
+        <Dialog label="ClaimTrail frequently asked questions" onClose={() => setIsFaqOpen(false)}>
+          <div className="ct-dialog max-w-xl flex flex-col">
+            <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+              <h2 className="text-base font-semibold">Frequently asked questions</h2>
+              <button aria-label="Close FAQs" onClick={() => setIsFaqOpen(false)} className="flex h-8 w-8 items-center justify-center rounded hover:bg-background">
+                <span aria-hidden="true" className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="overflow-y-auto divide-y divide-border px-5 text-sm">
+              {[
+                ['How do I start an assessment?', 'Open Questionnaire and upload your customer’s .xlsx security questionnaire. You can also load the sample assessment to explore the workflow.'],
+                ['Which evidence sources can I connect?', 'Connect security-policy PDFs and public GitHub repositories from Evidence Sources. ClaimTrail retrieves policy passages and repository references for questionnaire answers.'],
+                ['Do security checks prove that our production environment is secure?', 'No. Checks evaluate the inspected evidence against implemented rules. Missing, ambiguous, or conflicting evidence still requires human review.'],
+                ['Can I review answers before exporting?', 'Yes. Inspect citations, edit drafts, and review answers in the questionnaire workspace before preparing your export.'],
+              ].map(([question, answer]) => (
+                <details key={question} className="py-4">
+                  <summary className="cursor-pointer font-medium leading-relaxed">{question}</summary>
+                  <p className="mt-3 text-secondary leading-relaxed">{answer}</p>
+                </details>
+              ))}
+            </div>
+            <div className="border-t border-border px-5 py-4">
+              <button onClick={() => {
+                setIsFaqOpen(false);
+                setCurrentNav('questionnaire');
+                setQuestionnaireMode('catalog');
+                requestAnimationFrame(() => {
+                  const workspace = document.getElementById('assessment');
+                  workspace?.scrollIntoView({ block: 'start' });
+                  workspace?.focus({ preventScroll: true });
+                });
+              }} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-accent-hover">Open Questionnaire</button>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
       {/* ── Toast Notification ── */}
       {toast && (
         <ToastNotification
@@ -616,6 +666,7 @@ export default function DashboardPage() {
           onClose={() => setToast(null)}
         />
       )}
+      </section>
     </div>
   );
 }

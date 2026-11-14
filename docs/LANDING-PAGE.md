@@ -18,10 +18,9 @@ The supplied Axial.ai reference pins the direction: a spacious monochrome field,
 
 ## Asset provenance
 
-- **Asset:** `public/images/claimtrail-hero-artwork.png` (1132 × 674, transparent PNG).
-- **Source:** user-supplied 1199 × 781 Axial.ai reference, original filename `2f99c6b26a9cd5a378688ea670a384d6.jpg`.
-- **Method:** `scripts/extract-hero-artwork.py` crops out the frame and keeps the original map's small connected dot marks while excluding the reference's larger lettering, controls and footer. The light paper is unmatted into alpha; no dots are redrawn, generated or replaced.
-- Original dot positions, native pixel resolution, density and monochrome texture are retained at full opacity. The browser scales and crops the whole image using `background-size: cover` on desktop; portrait widths scale by width so the map is not magnified into an empty centre slice. A soft central fade keeps the headline legible.
+- **Asset:** `public/images/claimtrail-hero-background.png` (1536 × 1024, PNG).
+- **Source:** user-supplied background image `Designer (2).png`.
+- **Method:** The exact supplied image is used as the full-bleed background with no extraction, redrawing, cropping or filtering. A soft central fade keeps the headline readable.
 - The reference is user-provided; no separate license or redistribution rights are asserted.
 - The earlier `public/world-map.svg` remains untouched but is not used by this hero.
 

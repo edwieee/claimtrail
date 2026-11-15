@@ -26,7 +26,8 @@
   background-image: url('/images/claimtrail-hero-background.png');
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
+  /* Nudge the artwork left so the right hand sits clear of the copy's last line. */
+  background-position: calc(50% - var(--hero-shift, 16px)) center;
   opacity: 1;
 }
 
@@ -170,7 +171,7 @@
   .mobileMenu nav > a[aria-current='page'] { color: var(--primary); }
   .mobileMenu .cta { margin-top: 8px; }
   .hero { padding: 100px 20px; }
-  .map { background-size: 200% auto; }
+  .map { background-size: 200% auto; --hero-shift: 6px; }
   .supporting { max-width: 340px; margin-top: 22px; }
 }
 

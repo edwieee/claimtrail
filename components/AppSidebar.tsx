@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { NavItem } from '@/types/claimtrail';
 
@@ -48,24 +49,22 @@ export function AppSidebar({
       {/* Top Brand & Main Nav */}
       <div className="flex flex-col gap-5">
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 pb-5 border-b border-border">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-on-surface flex items-center justify-center text-surface-container-lowest text-xs font-semibold tracking-tight">
-              <span>CT</span>
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight leading-none">
-                  ClaimTrail
-                </span>
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-code-sm text-secondary bg-surface-container-low border border-surface-container-highest">
-                  v2.4
-                </span>
-              </div>
-              <span className="text-label-sm font-label-sm text-secondary leading-tight mt-0.5">
-                Enterprise Audit Engine
-              </span>
-            </div>
+        <div className="flex flex-col gap-1 px-2 pb-5 border-b border-border">
+          <Image
+            src="/images/claimtrail-logo.png"
+            alt="ClaimTrail"
+            width={1712}
+            height={250}
+            priority
+            className="h-6 w-auto self-start"
+          />
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-label-sm font-label-sm text-secondary leading-tight">
+              Enterprise Audit Engine
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-code-sm text-secondary bg-surface-container-low border border-surface-container-highest">
+              v2.4
+            </span>
           </div>
         </div>
 

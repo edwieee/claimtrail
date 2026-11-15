@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowRight, Menu } from 'lucide-react';
@@ -30,8 +31,14 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
       className={overlay ? styles.header : `${styles.header} ${styles.headerStatic}`}
     >
       <Link href="/" aria-label="ClaimTrail home" className={styles.brand} onClick={closeMenu}>
-        <span className={styles.brandMark} aria-hidden="true">CT</span>
-        <span>ClaimTrail</span>
+        <Image
+          src="/images/claimtrail-logo.png"
+          alt="ClaimTrail"
+          width={1712}
+          height={250}
+          priority
+          className={styles.brandLogo}
+        />
       </Link>
 
       <nav className={styles.desktopNav} aria-label="Website navigation">

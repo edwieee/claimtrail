@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface AppTopBarProps {
@@ -47,7 +48,15 @@ export function AppTopBar({
       {/* Left side: Breadcrumb & Context Switcher */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-secondary min-w-0">
-          <Link href="/" title="Back to ClaimTrail website" className="md:hidden font-semibold text-on-surface hover:text-primary transition-colors">ClaimTrail</Link>
+          <Link href="/" title="Back to ClaimTrail website" className="md:hidden flex items-center shrink-0">
+            <Image
+              src="/images/claimtrail-logo.png"
+              alt="ClaimTrail"
+              width={1712}
+              height={250}
+              className="h-[22px] w-auto"
+            />
+          </Link>
           {breadcrumb.map((crumb, idx) => (
             <React.Fragment key={idx}>
               <span aria-hidden="true" className={`text-secondary/50 text-[11px] ${idx === 0 ? 'hidden' : idx === breadcrumb.length - 1 ? 'md:hidden xl:inline' : 'hidden xl:inline'}`}>/</span>

@@ -56,24 +56,18 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   flex-shrink: 0;
-  color: var(--on-surface);
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
 }
 
-.brandMark {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: var(--on-surface);
-  color: white;
-  font-size: 12px;
-  letter-spacing: -0.02em;
+.brandLogo {
+  height: 30px;
+  width: auto;
+}
+
+.footerLogo {
+  height: 28px;
+  width: auto;
+  align-self: flex-start;
 }
 
 .desktopNav {
@@ -155,12 +149,13 @@
 @media (max-width: 1023px) {
   .header { width: calc(100% - 48px); min-height: 88px; gap: 20px; }
   .desktopNav { gap: 22px; }
-  .brand { font-size: 19px; }
+  .brandLogo { height: 26px; }
   .headerCta { padding-inline: 16px; }
 }
 
 @media (max-width: 767px) {
   .header { width: calc(100% - 40px); min-height: 80px; }
+  .brandLogo { height: 24px; }
   .desktopNav, .headerCta { display: none; }
   .mobileMenu { display: block; }
   .mobileMenu summary { display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; list-style: none; border-radius: 6px; }

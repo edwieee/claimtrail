@@ -56,7 +56,7 @@ export function AppSidebar({
             width={1712}
             height={250}
             priority
-            className="h-6 w-auto self-start"
+            className="h-[18px] w-auto self-start"
           />
           <div className="flex items-center justify-between gap-2">
             <span className="text-label-sm font-label-sm text-secondary leading-tight">

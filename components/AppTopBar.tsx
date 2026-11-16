@@ -54,7 +54,7 @@ export function AppTopBar({
               alt="ClaimTrail"
               width={1712}
               height={250}
-              className="h-[22px] w-auto"
+              className="h-[16.5px] w-auto"
             />
           </Link>
           {breadcrumb.map((crumb, idx) => (
